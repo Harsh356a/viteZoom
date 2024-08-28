@@ -2,33 +2,31 @@ import React, { useState, useEffect } from "react";
 import styled from "styled-components";
 import socket from "../../socket";
 import Chat from "../Chat/Chat";
-
+import BreakoutVideoRoom from "./BreakoutVedioroom";
 const BreakoutRooms = ({ roomId, currentUser, peers }) => {
   const [breakoutRooms, setBreakoutRooms] = useState([]);
   const [activeRoom, setActiveRoom] = useState(null);
   const [showChat, setShowChat] = useState(false);
 
   useEffect(() => {
-    console.log("break")
+    console.log("break");
     socket.on("FE-breakout-rooms-update", (rooms) => {
       setBreakoutRooms(rooms);
     });
 
-    console.log("hhs")
+    console.log("hhs");
     socket.on("FE-join-breakout-room", (roomName) => {
       setActiveRoom(roomName);
-      setShowChat(true);  // Automatically show chat when joining a breakout room
-
+      setShowChat(true); // Automatically show chat when joining a breakout room
     });
     socket.on("FE-leave-breakout-room", () => {
-        setActiveRoom(null);
-        setShowChat(false);
-      });
+      setActiveRoom(null);
+      setShowChat(false);
+    });
     return () => {
       socket.off("FE-breakout-rooms-update");
       socket.off("FE-join-breakout-room");
       socket.off("FE-leave-breakout-room");
-
     };
   }, []);
 
@@ -36,20 +34,27 @@ const BreakoutRooms = ({ roomId, currentUser, peers }) => {
     console.log("Creating breakout room");
     console.log("Current roomId:", roomId);
     console.log("Current socket id:", socket);
-    
+
     const roomName = `Breakout-${Date.now()}`;
-    console.log("Emitting BE-create-breakout-room", { mainRoomId: roomId, breakoutRoomName: roomName });
-    
-    socket.emit("BE-create-breakout-room", {
+    console.log("Emitting BE-create-breakout-room", {
       mainRoomId: roomId,
       breakoutRoomName: roomName,
-    }, (response) => {
-      if (response && response.success) {
-        console.log("Breakout room created successfully:", response);
-      } else {
-        console.error("Failed to create breakout room:", response);
-      }
     });
+
+    socket.emit(
+      "BE-create-breakout-room",
+      {
+        mainRoomId: roomId,
+        breakoutRoomName: roomName,
+      },
+      (response) => {
+        if (response && response.success) {
+          console.log("Breakout room created successfully:", response);
+        } else {
+          console.error("Failed to create breakout room:", response);
+        }
+      }
+    );
   };
 
   const joinBreakoutRoom = (roomName) => {
@@ -59,6 +64,7 @@ const BreakoutRooms = ({ roomId, currentUser, peers }) => {
       breakoutRoomName: roomName,
       userName: currentUser,
     });
+    setActiveRoom(roomName);
   };
 
   const leaveBreakoutRoom = () => {
@@ -73,19 +79,24 @@ const BreakoutRooms = ({ roomId, currentUser, peers }) => {
     setShowChat(!showChat);
   };
   return (
-     <BreakoutContainer>
+    <BreakoutContainer>
       <h3>Breakout Rooms</h3>
       {activeRoom ? (
         <div>
+          <BreakoutVideoRoom
+            key={activeRoom}
+            roomId={activeRoom}
+            currentUser={currentUser}
+            onLeave={leaveBreakoutRoom}
+          />
+
           <p>You are in: {activeRoom}</p>
           <Button onClick={leaveBreakoutRoom}>Leave Breakout Room</Button>
-          <Button onClick={toggleChat}>{showChat ? 'Hide Chat' : 'Show Chat'}</Button>
+          <Button onClick={toggleChat}>
+            {showChat ? "Hide Chat" : "Show Chat"}
+          </Button>
           {showChat && (
-            <Chat
-              display={true}
-              roomId={activeRoom}
-              isBreakoutRoom={true}
-            />
+            <Chat display={true} roomId={activeRoom} isBreakoutRoom={true} />
           )}
         </div>
       ) : (
