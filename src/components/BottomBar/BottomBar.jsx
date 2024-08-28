@@ -11,7 +11,9 @@ const BottomBar = ({
   screenShare,
   videoDevices,
   showVideoDevices,
-  setShowVideoDevices
+  setShowVideoDevices,
+  toggleBreakoutRooms // Add this prop
+
 }) => {
   const handleToggle = useCallback(
     (e) => {
@@ -63,6 +65,9 @@ const BottomBar = ({
           </div>
           Chat
         </ChatButton>
+        <BreakoutButton onClick={toggleBreakoutRooms}>
+        <i className="fas fa-users"></i>
+      </BreakoutButton>
         <ScreenButton onClick={clickScreenSharing}>
           <div>
             <FaIcon
@@ -107,6 +112,22 @@ const Center = styled.div`
 const Right = styled.div``;
 
 const ChatButton = styled.div`
+  width: 75px;
+  border: none;
+  font-size: 0.9375rem;
+  padding: 5px;
+
+  :hover {
+    background-color: #77b7dd;
+    cursor: pointer;
+    border-radius: 15px;
+  }
+
+  * {
+    pointer-events: none;
+  }
+`;
+const BreakoutButton = styled.div`
   width: 75px;
   border: none;
   font-size: 0.9375rem;

@@ -5,6 +5,7 @@ import socket from '../../socket';
 import VideoCard from '../Video/VideoCard';
 import BottomBar from '../BottomBar/BottomBar';
 import Chat from '../Chat/Chat';
+import BreakoutRooms from './BreakOutRoom'; // Import the new component
 
 // params 
 import { useParams } from 'react-router-dom';
@@ -19,6 +20,8 @@ const Room = () => {
   const [displayChat, setDisplayChat] = useState(false);
   const [screenShare, setScreenShare] = useState(false);
   const [showVideoDevices, setShowVideoDevices] = useState(false);
+  const [showBreakoutRooms, setShowBreakoutRooms] = useState(false);
+
   const peersRef = useRef([]);
   const userVideoRef = useRef();
   const screenTrackRef = useRef();
@@ -347,7 +350,33 @@ const Room = () => {
         });
     }
   };
+  useEffect(() => {
+    // ... (keep existing code)
 
+    socket.on('FE-user-join-breakout', ({ userId, userName, roomName }) => {
+      // Remove user from main room peers
+      setPeers((prevPeers) => prevPeers.filter((peer) => peer.peerID !== userId));
+    });
+
+    socket.on('FE-user-leave-breakout', ({ userId, userName }) => {
+      // Add user back to main room peers
+      const peer = createPeer(userId, socket.id, userStream.current);
+      peer.userName = userName;
+      peer.peerID = userId;
+
+      setPeers((prevPeers) => [...prevPeers, peer]);
+    });
+
+    // Clean up
+    return () => {
+      // ... (keep existing cleanup code)
+      socket.off('FE-user-join-breakout');
+      socket.off('FE-user-leave-breakout');
+    };
+  }, []);
+  const toggleBreakoutRooms = () => {
+    setShowBreakoutRooms(!showBreakoutRooms);
+  };
   return (
     <RoomContainer onClick={clickBackground}>
       <VideoAndBarContainer>
@@ -382,9 +411,18 @@ const Room = () => {
           videoDevices={videoDevices}
           showVideoDevices={showVideoDevices}
           setShowVideoDevices={setShowVideoDevices}
+          toggleBreakoutRooms={toggleBreakoutRooms}
+
         />
       </VideoAndBarContainer>
       <Chat display={displayChat} roomId={roomId} />
+      {showBreakoutRooms && (
+        <BreakoutRooms
+          roomId={roomId}
+          currentUser={currentUser}
+          peers={peers}
+        />
+      )}
     </RoomContainer>
   );
 };
