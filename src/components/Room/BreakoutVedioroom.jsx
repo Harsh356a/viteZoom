@@ -33,67 +33,67 @@ const BreakoutVideoRoom = ({ roomId, currentUser, onLeave }) => {
         }
 
         console.log("Emitting BE-join-breakout-room");
-        // socket.emit("BE-join-breakout-room", { roomId, userName: currentUser });
+        socket.emit("BE-join-breakout-room", { roomId, userName: currentUser });
 
-        // socket.on("FE-user-join", (users) => {
-        //   console.log("Received FE-user-join", users);
-        //   if (!mounted) return;
-        //   const peers = [];
-        //   users.forEach(({ userId, info }) => {
-        //     let { userName, video, audio } = info;
-        //     if (userName !== currentUser) {
-        //       const peer = createPeer(userId, socket.id, stream);
-        //       peer.userName = userName;
-        //       peer.peerID = userId;
-        //       peersRef.current.push({
-        //         peerID: userId,
-        //         peer,
-        //         userName,
-        //       });
-        //       peers.push(peer);
-        //       setUserVideoAudio((prev) => ({
-        //         ...prev,
-        //         [peer.userName]: { video, audio },
-        //       }));
-        //     }
-        //   });
-        //   setPeers(peers);
-        // });
+        socket.on("FE-user-join", (users) => {
+          console.log("Received FE-user-join", users);
+          if (!mounted) return;
+          const peers = [];
+          users.forEach(({ userId, info }) => {
+            let { userName, video, audio } = info;
+            if (userName !== currentUser) {
+              const peer = createPeer(userId, socket.id, stream);
+              peer.userName = userName;
+              peer.peerID = userId;
+              peersRef.current.push({
+                peerID: userId,
+                peer,
+                userName,
+              });
+              peers.push(peer);
+              setUserVideoAudio((prev) => ({
+                ...prev,
+                [peer.userName]: { video, audio },
+              }));
+            }
+          });
+          setPeers(peers);
+        });
 
-        // socket.on("FE-receive-call", ({ signal, from, info }) => {
-        //   const { userName, video, audio } = info;
-        //   const peerIdx = findPeer(from);
-        //   if (!peerIdx) {
-        //     const peer = addPeer(signal, from, stream);
-        //     peer.userName = userName;
-        //     peersRef.current.push({
-        //       peerID: from,
-        //       peer,
-        //       userName: userName,
-        //     });
-        //     setPeers((users) => [...users, peer]);
-        //     setUserVideoAudio((prev) => ({
-        //       ...prev,
-        //       [peer.userName]: { video, audio },
-        //     }));
-        //   }
-        // });
+        socket.on("FE-receive-call", ({ signal, from, info }) => {
+          const { userName, video, audio } = info;
+          const peerIdx = findPeer(from);
+          if (!peerIdx) {
+            const peer = addPeer(signal, from, stream);
+            peer.userName = userName;
+            peersRef.current.push({
+              peerID: from,
+              peer,
+              userName: userName,
+            });
+            setPeers((users) => [...users, peer]);
+            setUserVideoAudio((prev) => ({
+              ...prev,
+              [peer.userName]: { video, audio },
+            }));
+          }
+        });
 
-        // socket.on("FE-call-accepted", ({ signal, answerId }) => {
-        //   const peerIdx = findPeer(answerId);
-        //   peerIdx.peer.signal(signal);
-        // });
+        socket.on("FE-call-accepted", ({ signal, answerId }) => {
+          const peerIdx = findPeer(answerId);
+          peerIdx.peer.signal(signal);
+        });
 
-        // socket.on("FE-user-leave", ({ userId, userName }) => {
-        //   const peerIdx = findPeer(userId);
-        //   peerIdx.peer.destroy();
-        //   setPeers((users) =>
-        //     users.filter((user) => user.peerID !== peerIdx.peer.peerID)
-        //   );
-        //   peersRef.current = peersRef.current.filter(
-        //     ({ peerID }) => peerID !== userId
-        //   );
-        // });
+        socket.on("FE-user-leave", ({ userId, userName }) => {
+          const peerIdx = findPeer(userId);
+          peerIdx.peer.destroy();
+          setPeers((users) =>
+            users.filter((user) => user.peerID !== peerIdx.peer.peerID)
+          );
+          peersRef.current = peersRef.current.filter(
+            ({ peerID }) => peerID !== userId
+          );
+        });
       } catch (error) {
         console.error("Error getting user media:", error);
       }
