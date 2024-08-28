@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from "react";
 import styled from "styled-components";
 import socket from "../../socket";
+import Chat from "../Chat/Chat";
 
 const BreakoutRooms = ({ roomId, currentUser, peers }) => {
   const [breakoutRooms, setBreakoutRooms] = useState([]);
   const [activeRoom, setActiveRoom] = useState(null);
+  const [showChat, setShowChat] = useState(false);
 
   useEffect(() => {
     console.log("break")
@@ -15,11 +17,18 @@ const BreakoutRooms = ({ roomId, currentUser, peers }) => {
     console.log("hhs")
     socket.on("FE-join-breakout-room", (roomName) => {
       setActiveRoom(roomName);
-    });
+      setShowChat(true);  // Automatically show chat when joining a breakout room
 
+    });
+    socket.on("FE-leave-breakout-room", () => {
+        setActiveRoom(null);
+        setShowChat(false);
+      });
     return () => {
       socket.off("FE-breakout-rooms-update");
       socket.off("FE-join-breakout-room");
+      socket.off("FE-leave-breakout-room");
+
     };
   }, []);
 
@@ -60,15 +69,24 @@ const BreakoutRooms = ({ roomId, currentUser, peers }) => {
     });
     setActiveRoom(null);
   };
-
+  const toggleChat = () => {
+    setShowChat(!showChat);
+  };
   return (
-    <BreakoutContainer>
+     <BreakoutContainer>
       <h3>Breakout Rooms</h3>
-      {console.log(activeRoom)}
       {activeRoom ? (
         <div>
           <p>You are in: {activeRoom}</p>
           <Button onClick={leaveBreakoutRoom}>Leave Breakout Room</Button>
+          <Button onClick={toggleChat}>{showChat ? 'Hide Chat' : 'Show Chat'}</Button>
+          {showChat && (
+            <Chat
+              display={true}
+              roomId={activeRoom}
+              isBreakoutRoom={true}
+            />
+          )}
         </div>
       ) : (
         <div>
