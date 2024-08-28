@@ -178,7 +178,7 @@ const BreakoutVideoRoom = ({ roomId, currentUser, onLeave }) => {
         )}
         <MyVideo ref={userVideoRef} muted autoPlay playsInline />
       </VideoBox>
-      {console.log("peers")}
+      {console.log("peers",peers)}
       {peers.map((peer, index) => (
         <VideoBox
           className={`width-peer${peers.length > 8 ? "" : peers.length}`}
