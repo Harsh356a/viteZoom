@@ -1,8 +1,9 @@
-import React from 'react';
-import { BrowserRouter, Route, Routes } from 'react-router-dom';
-import Main from './components/Main/Main';
-import Room from './components/Room/Room'
-import styled from 'styled-components';
+import React from "react";
+import { BrowserRouter, Route, Routes } from "react-router-dom";
+import Main from "./components/Main/Main";
+import Room from "./components/Room/Room";
+import styled from "styled-components";
+import ViewerPage from "./components/ViewerPage/ViewerPage";
 
 function App() {
   return (
@@ -11,6 +12,7 @@ function App() {
         <Routes>
           <Route exact path="/" element={<Main />} />
           <Route exact path="/room/:roomId" element={<Room />} />
+          <Route exact path="/view/:roomId" element={<ViewerPage />} />
         </Routes>
       </AppContainer>
     </BrowserRouter>

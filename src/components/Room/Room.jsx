@@ -16,6 +16,7 @@ const Room = () => {
   const [userVideoAudio, setUserVideoAudio] = useState({
     localUser: { video: true, audio: true },
   });
+ 
   const [videoDevices, setVideoDevices] = useState([]);
   const [displayChat, setDisplayChat] = useState(false);
   const [screenShare, setScreenShare] = useState(false);
@@ -31,161 +32,117 @@ const Room = () => {
 
   useEffect(() => {
     console.log('effect roomId: ', roomId);
+  
     // Get Video Devices
     navigator.mediaDevices.enumerateDevices().then((devices) => {
       const filtered = devices.filter((device) => device.kind === 'videoinput');
       setVideoDevices(filtered);
     });
-
+  
     // Set Back Button Event
     window.addEventListener('popstate', goToBack);
-
+  
     // Connect Camera & Mic
     navigator.mediaDevices
-      .getUserMedia({ video: true, audio: true })
-      .then((stream) => {
-        userVideoRef.current.srcObject = stream;
-        userStream.current = stream;
+    .getUserMedia({ video: true, audio: true })
+    .then((stream) => {
+      userVideoRef.current.srcObject = stream;
+      userStream.current = stream;
 
-        socket.emit('BE-join-room', { roomId, userName: currentUser });
-        socket.on('FE-user-join', (users) => {
-          // all users
-          const peers = [];
-          users.forEach(({ userId, info }) => {
-            let { userName, video, audio } = info;
+      socket.emit('BE-join-room', { roomId, userName: currentUser });
 
-            if (userName !== currentUser) {
-              const peer = createPeer(userId, socket.id, stream);
+      // Handle new viewers
+      socket.on('FE-new-viewer', ({ viewerId, userName }) => {
+        console.log('New viewer joined:', viewerId, userName);
+        if (userStream.current) {
+          const peer = new Peer({
+            initiator: true,
+            trickle: false,
+            stream: userStream.current,
+          });
 
-              peer.userName = userName;
-              peer.peerID = userId;
+          peer.on('signal', (signal) => {
+            socket.emit('BE-send-signal-to-viewer', { viewerId, signal });
+          });
 
-              peersRef.current.push({
-                peerID: userId,
-                peer,
-                userName,
-              });
-              peers.push(peer);
-
-              setUserVideoAudio((preList) => {
-                return {
-                  ...preList,
-                  [peer.userName]: { video, audio },
-                };
-              });
+          socket.on('FE-viewer-signal', ({ viewerId: signalViewerId, signal }) => {
+            if (signalViewerId === viewerId) {
+              peer.signal(signal);
             }
           });
 
-          setPeers(peers);
-        });
+          peer.on('connect', () => {
+            console.log('Peer connected to viewer:', viewerId);
+          });
 
-        socket.on('FE-receive-call', ({ signal, from, info }) => {
-          let { userName, video, audio } = info;
-          const peerIdx = findPeer(from);
+          peer.on('error', (err) => {
+            console.error('Peer error with viewer:', err);
+          });
 
-          if (!peerIdx) {
-            const peer = addPeer(signal, from, stream);
+          peersRef.current.push({
+            peerID: viewerId,
+            peer,
+            userName
+          });
+        }
+      }); 
 
-            peer.userName = userName;
-
-            peersRef.current.push({
-              peerID: from,
-              peer,
-              userName: userName,
-            });
-            setPeers((users) => {
-              return [...users, peer];
-            });
-            setUserVideoAudio((preList) => {
-              return {
-                ...preList,
-                [peer.userName]: { video, audio },
-              };
-            });
-          }
-        });
 
         socket.on('FE-call-accepted', ({ signal, answerId }) => {
+          console.log('view', answerId);
           const peerIdx = findPeer(answerId);
-          peerIdx.peer.signal(signal);
+          console.log("istur",peerIdx)
+          if (peerIdx && peerIdx.peer) {  // Check if peerIdx exists and has a peer property
+            peerIdx.peer.signal(signal);
+          } else {
+            console.error('Peer not found for answerId:', answerId);
+          }
         });
-
+  
         socket.on('FE-user-leave', ({ userId, userName }) => {
           const peerIdx = findPeer(userId);
-          peerIdx.peer.destroy();
-          setPeers((users) => {
-            users = users.filter((user) => user.peerID !== peerIdx.peer.peerID);
-            return [...users];
-          });
-          peersRef.current = peersRef.current.filter(({ peerID }) => peerID !== userId );
+          
+          if (peerIdx && peerIdx.peer) {  // Check if peerIdx exists and has a peer property
+            peerIdx.peer.destroy();
+            setPeers((users) => {
+              users = users.filter((user) => user.peerID !== peerIdx.peer.peerID);
+              return [...users];
+            });
+            peersRef.current = peersRef.current.filter(({ peerID }) => peerID !== userId);
+          } else {
+            console.error('Peer not found for userId:', userId);
+          }
         });
       });
-
+  
     socket.on('FE-toggle-camera', ({ userId, switchTarget }) => {
       const peerIdx = findPeer(userId);
-
-      setUserVideoAudio((preList) => {
-        let video = preList[peerIdx.userName].video;
-        let audio = preList[peerIdx.userName].audio;
-
-        if (switchTarget === 'video') video = !video;
-        else audio = !audio;
-
-        return {
-          ...preList,
-          [peerIdx.userName]: { video, audio },
-        };
-      });
+      
+      if (peerIdx && peerIdx.userName) {  // Check if peerIdx exists and has a userName
+        setUserVideoAudio((preList) => {
+          let video = preList[peerIdx.userName].video;
+          let audio = preList[peerIdx.userName].audio;
+  
+          if (switchTarget === 'video') video = !video;
+          else audio = !audio;
+  
+          return {
+            ...preList,
+            [peerIdx.userName]: { video, audio },
+          };
+        });
+      } else {
+        console.error('Peer not found for userId:', userId);
+      }
     });
-
+  
     return () => {
       console.log('disconnect');
       socket.disconnect();
     };
     // eslint-disable-next-line
   }, []);
-
-  function createPeer(userId, caller, stream) {
-    const peer = new Peer({
-      initiator: true,
-      trickle: false,
-      stream,
-    });
-
-    peer.on('signal', (signal) => {
-      socket.emit('BE-call-user', {
-        userToCall: userId,
-        from: caller,
-        signal,
-      });
-    });
-    peer.on('disconnect', () => {
-      peer.destroy();
-    });
-
-    return peer;
-  }
-
-  function addPeer(incomingSignal, callerId, stream) {
-    const peer = new Peer({
-      initiator: false,
-      trickle: false,
-      stream,
-    });
-
-    peer.on('signal', (signal) => {
-      socket.emit('BE-accept-call', { signal, to: callerId });
-    });
-
-    peer.on('disconnect', () => {
-      peer.destroy();
-    });
-
-    peer.signal(incomingSignal);
-
-    return peer;
-  }
-
+  
   function findPeer(id) {
     return peersRef.current.find((p) => p.peerID === id);
   }
@@ -350,6 +307,7 @@ const Room = () => {
         });
     }
   };
+  
   useEffect(() => {
     // ... (keep existing code)
 
