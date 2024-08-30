@@ -361,9 +361,25 @@ const Room = () => {
         });
     }
   };
-let role = "Observe"
+  const role = localStorage.getItem("roletoban"); // Example role value
   return (
     <RoomContainer onClick={clickBackground}>
+      <Header>
+        <div style={{display:'flex', gap:"20px",alignItems:'center'}}>
+        <Title>On Going Meeting</Title>
+          <ModeratorView>Moderator View</ModeratorView>
+          </div>
+        <Controls>
+
+          <p style={{fontSize:"40px" ,color:"orange",fontWeight:"900"}} >AMPLIFY</p  >
+        </Controls>
+      </Header>
+      <Header>
+        <Title>MEETING 01 - PROJECT NAME</Title>
+        <Controls>
+          <LeaveButton>Leave</LeaveButton>
+        </Controls>
+      </Header>
       <VideoAndBarContainer>
         <VideoContainer>
           {/* Current User Video */}
@@ -378,7 +394,7 @@ let role = "Observe"
               onClick={expandScreen}
               ref={userVideoRef}
               muted
-              style={{ display: role === 'Observer' ? 'none' : 'block' }} // Hide the video element if the role is "Observer"
+              style={{ display: role === "Observer" ? "none" : "block" }} // Hide the video element if the role is "Observer"
               autoPlay
             ></MyVideo>
           </VideoBox>
@@ -406,14 +422,44 @@ let role = "Observe"
 
 const RoomContainer = styled.div`
   display: flex;
-  width: 100%;
-  max-height: 100vh;
-  flex-direction: row;
+  width:100%;
+
+  flex-direction: column;
+  height: 100vh;
+  background-color: #f0f0f0;
 `;
 
+const Header = styled.div`
+width:90%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 20px;
+  // background-color: white;
+`;
+const ModeratorView = styled.span`
+  background-color: #ffa500;
+  color: white;
+  padding: 5px 5px;
+  border-radius: 15px;
+  height:12px;
+  font-size:10px;
+`;
+
+const LeaveButton = styled.button`
+  background-color: #ff4d4d;
+  color: white;
+  border: none;
+  padding: 5px 10px;
+  border-radius: 5px;
+  cursor: pointer;
+`;
 const VideoContainer = styled.div`
-  max-width: 100%;
-  height: 92%;
+  max-width: 96%;
+  margin:0 auto;
+  border-radius:8px;
+  height: 75vh;
+  // overflow:scroll;
   display: flex;
   flex-direction: row;
   justify-content: space-around;
@@ -422,16 +468,26 @@ const VideoContainer = styled.div`
   padding: 15px;
   box-sizing: border-box;
   gap: 10px;
+    background-color: black;
+
 `;
 
 const VideoAndBarContainer = styled.div`
-  position: relative;
+  // position: relative;
   width: 100%;
   height: 100vh;
 `;
 
 const MyVideo = styled.video``;
-
+const Title = styled.h1`
+  font-size: 18px;
+  font-weight: bold;
+  color:#000;
+`;
+const Controls = styled.div`
+  display: flex;
+  align-items: center;
+`;
 const VideoBox = styled.div`
   position: relative;
   display: flex;

@@ -20,7 +20,7 @@ const BottomBar = ({
     },
     [setShowVideoDevices]
   );
-  const role = "Observe"; // Example role value
+  const role = localStorage.getItem("roletoban"); // Example role value
 
   return (
     <Bar>
@@ -107,7 +107,8 @@ const BottomBar = ({
 
 const Bar = styled.div`
   position: absolute;
-  right: 50px;
+  // margin:0 ,auto;
+  right: 45px;
   bottom: 0;
   width: 95%;
   border-radius: 10px;
