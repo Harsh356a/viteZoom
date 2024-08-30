@@ -459,7 +459,7 @@ const VideoContainer = styled.div`
   margin:0 auto;
   border-radius:8px;
   height: 75vh;
-  // overflow:scroll;
+  overflow:scroll;
   display: flex;
   flex-direction: row;
   justify-content: space-around;
