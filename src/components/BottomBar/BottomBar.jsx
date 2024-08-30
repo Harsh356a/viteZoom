@@ -20,11 +20,16 @@ const BottomBar = ({
     },
     [setShowVideoDevices]
   );
- 
+  const role = "Observe"; // Example role value
+
   return (
     <Bar>
       <Left>
-        <CameraButton onClick={toggleCameraAudio} data-switch="video">
+        <CameraButton
+          onClick={toggleCameraAudio}
+          data-switch="video"
+          className={role === "Observer" ? "disabled" : ""}
+        >
           <div>
             {userVideoAudio.video ? (
               <FaIcon className="fas fa-video"></FaIcon>
@@ -54,7 +59,11 @@ const BottomBar = ({
         <SwitchMenu onClick={handleToggle}>
           <i className="fas fa-angle-up"></i>
         </SwitchMenu>
-        <CameraButton onClick={toggleCameraAudio} data-switch="audio">
+        <CameraButton
+          onClick={toggleCameraAudio}
+          data-switch="audio"
+          className={role === "Observer" ? "disabled" : ""}
+        >
           <div>
             {userVideoAudio.audio ? (
               <FaIcon className="fas fa-microphone"></FaIcon>
@@ -66,19 +75,24 @@ const BottomBar = ({
         </CameraButton>
       </Left>
       <Center>
-        <ChatButton onClick={clickChat}>
+        <ChatButton
+          onClick={clickChat}
+          className={role === "Observer" ? "disabled" : ""}
+        >
           <div>
             <FaIcon className="fas fa-comments"></FaIcon>
           </div>
           Chat
         </ChatButton>
-        <BreakoutButton onClick={toggleBreakoutRooms}>
-          <i className="fas fa-users"></i>
-        </BreakoutButton>
-        <ScreenButton onClick={clickScreenSharing}>
+
+        <ScreenButton
+          className={role === "Observer" ? "disabled" : ""}
+          onClick={role !== "Observer" ? clickScreenSharing : undefined} // Prevent click if role is "Observer"
+        >
           <div>
             <FaIcon
               className={`fas fa-desktop ${screenShare ? "sharing" : ""}`}
+              // Disable the button if the role is "Observer"
             ></FaIcon>
           </div>
           Share Screen
@@ -96,7 +110,7 @@ const Bar = styled.div`
   right: 50px;
   bottom: 0;
   width: 95%;
-  border-radius:10px;
+  border-radius: 10px;
   height: 8%;
   display: flex;
   justify-content: center;
@@ -134,8 +148,16 @@ const ChatButton = styled.div`
   * {
     pointer-events: none;
   }
+
+  &.disabled {
+    opacity: 0.5;
+    pointer-events: none;
+    cursor: not-allowed;
+  }
 `;
-const BreakoutButton = styled.div`
+
+const CameraButton = styled.div`
+  position: relative;
   width: 75px;
   border: none;
   font-size: 0.9375rem;
@@ -149,6 +171,20 @@ const BreakoutButton = styled.div`
 
   * {
     pointer-events: none;
+  }
+
+  &.disabled {
+    opacity: 0.5;
+    pointer-events: none;
+    cursor: not-allowed;
+  }
+
+  .fa-microphone-slash {
+    color: #ee2560;
+  }
+
+  .fa-video-slash {
+    color: #ee2560;
   }
 `;
 
@@ -166,6 +202,12 @@ const ScreenButton = styled.div`
 
   .sharing {
     color: #ee2560;
+  }
+
+  &.disabled {
+    opacity: 0.5;
+    pointer-events: none;
+    cursor: not-allowed;
   }
 `;
 
@@ -187,32 +229,6 @@ const StopButton = styled.div`
   :hover {
     background-color: #f25483;
     cursor: pointer;
-  }
-`;
-
-const CameraButton = styled.div`
-  position: relative;
-  width: 75px;
-  border: none;
-  font-size: 0.9375rem;
-  padding: 5px;
-
-  :hover {
-    background-color: #77b7dd;
-    cursor: pointer;
-    border-radius: 15px;
-  }
-
-  * {
-    pointer-events: none;
-  }
-
-  .fa-microphone-slash {
-    color: #ee2560;
-  }
-
-  .fa-video-slash {
-    color: #ee2560;
   }
 `;
 
