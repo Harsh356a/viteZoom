@@ -2,31 +2,23 @@ import React, { useEffect, useState, useRef } from 'react';
 import styled from 'styled-components';
 import socket from '../../socket';
 
-const Chat = ({ display, roomId, isBreakoutRoom }) => {
+const Chat = ({ display, roomId }) => {
   const currentUser = sessionStorage.getItem('user');
-  const [messages, setMessages] = useState([]);
+  const [msg, setMsg] = useState([]);
   const messagesEndRef = useRef(null);
   const inputRef = useRef();
   
   useEffect(() => {
-    socket.on('FE-receive-message', ({ msg, sender, isBreakoutRoom: msgIsBreakout, roomId: msgRoomId }) => {
-      console.log("Received message:", msg, sender, msgIsBreakout, msgRoomId);
-      if (msgIsBreakout === isBreakoutRoom && msgRoomId === roomId) {
-        setMessages((msgs) => [...msgs, { sender, msg }]);
-      }
+    socket.on('FE-receive-message', ({ msg, sender }) => {
+      setMsg((msgs) => [...msgs, { sender, msg }]);
     });
+  }, []);
 
-    return () => {
-      socket.off('FE-receive-message');
-    };
-  }, [isBreakoutRoom, roomId]);
-
-  useEffect(() => {
-    scrollToBottom()
-  }, [messages]);
+  // Scroll to Bottom of Message List
+  useEffect(() => {scrollToBottom()}, [msg])
 
   const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth'});
+    messagesEndRef.current.scrollIntoView({ behavior: 'smooth'});
   }
 
   const sendMessage = (e) => {
@@ -34,8 +26,7 @@ const Chat = ({ display, roomId, isBreakoutRoom }) => {
       const msg = e.target.value;
 
       if (msg) {
-        socket.emit('BE-send-message', { roomId, msg, sender: currentUser, isBreakoutRoom });
-        setMessages((msgs) => [...msgs, { sender: currentUser, msg }]);
+        socket.emit('BE-send-message', { roomId, msg, sender: currentUser });
         inputRef.current.value = '';
       }
     }
@@ -43,23 +34,28 @@ const Chat = ({ display, roomId, isBreakoutRoom }) => {
 
   return (
     <ChatContainer className={display ? '' : 'width0'}>
-      <TopHeader>{isBreakoutRoom ? `Breakout Room Chat: ${roomId}` : 'Main Room Chat'}</TopHeader>
+      <TopHeader>Group Chat Room</TopHeader>
       <ChatArea>
         <MessageList>
-          {messages.map(({ sender, msg }, idx) => (
-            sender !== currentUser ? (
-              <Message key={idx}>
-                <strong>{sender}</strong>
-                <p>{msg}</p>
-              </Message>
-            ) : (
-              <UserMessage key={idx}>
-                <strong>{sender}</strong>
-                <p>{msg}</p>
-              </UserMessage>
-            )
-          ))}
-          <div style={{float:'left', clear: 'both'}} ref={messagesEndRef} />
+          {msg &&
+            msg.map(({ sender, msg }, idx) => {
+              if (sender !== currentUser) {
+                return (
+                  <Message key={idx}>
+                    <strong>{sender}</strong>
+                    <p>{msg}</p>
+                  </Message>
+                );
+              } else {
+                return (
+                  <UserMessage key={idx}>
+                    <strong>{sender}</strong>
+                    <p>{msg}</p>
+                  </UserMessage>
+                );
+              }
+            })}
+            <div style={{float:'left', clear: 'both'}} ref={messagesEndRef} />
         </MessageList>
       </ChatArea>
       <BottomInput
@@ -70,6 +66,7 @@ const Chat = ({ display, roomId, isBreakoutRoom }) => {
     </ChatContainer>
   );
 };
+
 const ChatContainer = styled.div`
   display: flex;
   flex-direction: column;
