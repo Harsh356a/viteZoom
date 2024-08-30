@@ -19,7 +19,9 @@ const Main = () => {
         const userName = userRef.current.value;
 
         sessionStorage.setItem("user", userName);
-        navigate(`/room/${roomName}`);
+        const recentRoom = localStorage.getItem("recentRoom");
+
+        navigate(`/room/${recentRoom}`);
       } else {
         setErr(error);
         setErrMsg("User name already exists");
@@ -32,20 +34,26 @@ const Main = () => {
       const recentUsername = localStorage.getItem("recentUsername");
 
       if (recentRoom && recentUsername) {
-        socket.emit("BE-check-user", { roomId: recentRoom, userName: recentUsername });
-        console.log("Emitted to socket: ", { roomId: recentRoom, userName: recentUsername });
+        socket.emit("BE-check-user", {
+          roomId: recentRoom,
+          userName: recentUsername,
+        });
+        console.log("Emitted to socket: ", {
+          roomId: recentRoom,
+          userName: recentUsername,
+        });
       }
     };
 
     // Emit on component mount and whenever the localStorage values change
-    window.addEventListener('storage', handleStorageChange);
+    window.addEventListener("storage", handleStorageChange);
 
     // Emit immediately if the values are already in localStorage
     handleStorageChange();
 
     return () => {
       socket.off("FE-error-user-exist"); // Cleanup socket listener
-      window.removeEventListener('storage', handleStorageChange); // Cleanup event listener
+      window.removeEventListener("storage", handleStorageChange); // Cleanup event listener
     };
   }, []);
 
