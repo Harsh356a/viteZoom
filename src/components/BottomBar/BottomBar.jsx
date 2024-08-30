@@ -93,15 +93,16 @@ const BottomBar = ({
 
 const Bar = styled.div`
   position: absolute;
-  right: 0;
+  right: 50px;
   bottom: 0;
-  width: 100%;
+  width: 95%;
+  border-radius:10px;
   height: 8%;
   display: flex;
   justify-content: center;
   align-items: center;
   font-weight: 500;
-  background-color: #4ea1d3;
+  background-color: #000;
 `;
 const Left = styled.div`
   display: flex;

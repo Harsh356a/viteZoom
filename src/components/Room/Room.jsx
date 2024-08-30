@@ -370,117 +370,205 @@ const Room = () => {
   };
   return (
     <MainContainer>
-    <RoomContainer onClick={clickBackground}>
-      <VideoAndBarContainer>
-        <VideoContainer>
-          {/* Current User Video */}
-          <VideoBox
-            className={`width-peer${peers.length > 8 ? "" : peers.length}`}
-          >
-            {userVideoAudio["localUser"].video ? null : (
-              <UserName>{currentUser}</UserName>
-            )}
-            <FaIcon className="fas fa-expand" />
-            <MyVideo
-              onClick={expandScreen}
-              ref={userVideoRef}
-              muted
-              autoPlay
-            ></MyVideo>
-          </VideoBox>
-          {/* Joined User Vidoe */}
-          {peers &&
-            peers.map((peer, index, arr) => createUserVideo(peer, index, arr))}
-        </VideoContainer>
-        <BottomBar
-          clickScreenSharing={clickScreenSharing}
-          clickChat={clickChat}
-          clickCameraDevice={clickCameraDevice}
-          goToBack={goToBack}
-          toggleCameraAudio={toggleCameraAudio}
-          userVideoAudio={userVideoAudio["localUser"]}
-          screenShare={screenShare}
-          videoDevices={videoDevices}
-          showVideoDevices={showVideoDevices}
-          setShowVideoDevices={setShowVideoDevices}
-          toggleBreakoutRooms={toggleBreakoutRooms}
-        />
-      </VideoAndBarContainer>
-      <Chat display={displayChat} roomId={roomId} />
-      {showBreakoutRooms && (
-        <BreakoutRooms
-          roomId={roomId}
-          currentUser={currentUser}
-          peers={peers}
-        />
-      )}
-    </RoomContainer>
+      <RoomContainer onClick={clickBackground}>
+        <VideoAndBarContainer>
+          <Header>
+            <div className="meeting-status">
+              <span className="status-dot">⬤</span>
+              <span>On going meeting</span>
+              <span className="moderator-badge">Moderator View</span>
+            </div>
+            <h1>MEETING 01 - PROJECT NAME</h1>
+            <LeaveButton>Leave</LeaveButton>
+          </Header>
+          <VideoContainer>
+            {/* Current User Video */}
+            <VideoBox
+              className={`width-peer${peers.length > 8 ? "" : peers.length}`}
+            >
+              {userVideoAudio["localUser"].video ? null : (
+                <UserName>{currentUser}</UserName>
+              )}
+              <FaIcon className="fas fa-expand" />
+              <MyVideo
+                onClick={expandScreen}
+                ref={userVideoRef}
+                muted
+                autoPlay
+              ></MyVideo>
+            </VideoBox>
+            {/* Joined User Vidoe */}
+            {peers &&
+              peers.map((peer, index, arr) =>
+                createUserVideo(peer, index, arr)
+              )}
+          </VideoContainer>
+          <BottomBar
+            clickScreenSharing={clickScreenSharing}
+            clickChat={clickChat}
+            clickCameraDevice={clickCameraDevice}
+            goToBack={goToBack}
+            toggleCameraAudio={toggleCameraAudio}
+            userVideoAudio={userVideoAudio["localUser"]}
+            screenShare={screenShare}
+            videoDevices={videoDevices}
+            showVideoDevices={showVideoDevices}
+            setShowVideoDevices={setShowVideoDevices}
+            toggleBreakoutRooms={toggleBreakoutRooms}
+          />
+        </VideoAndBarContainer>
+        <Chat display={displayChat} roomId={roomId} />
+        {showBreakoutRooms && (
+          <BreakoutRooms
+            roomId={roomId}
+            currentUser={currentUser}
+            peers={peers}
+          />
+        )}
+      </RoomContainer>
     </MainContainer>
   );
 };
 
 const MainContainer = styled.div`
   display: flex;
-  border-radius:13px;
-  width: 97%;
-  justify-content:center;
-  align-items:center;
-  // max-height: fit;
-  height:fit;
-  flex-direction: row;
-  background-color:#000
-`;
-const RoomContainer = styled.div`
-  display: grid;
+  height: 100vh;
   width: 100%;
-  max-height: 80vh;
-  flex-direction: row;
+  background-color: #f0f0f0;
 `;
 
-const VideoContainer = styled.div`
-  max-width: 25%;
-  height: 40%;
+const RoomContainer = styled.div`
   display: flex;
-  flex-direction: row;
-  justify-content: space-around;
-  flex-wrap: wrap;
-  align-items: center;
-  padding: 15px;
-  box-sizing: border-box;
-  gap: 10px;
+  flex-direction: column;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(to bottom right, #f0f0f0, #e0e0e0);
 `;
 
 const VideoAndBarContainer = styled.div`
-  position: relative;
   width: 100%;
   height: 100vh;
+  display: flex;
+  flex-direction: column;
 `;
 
-const MyVideo = styled.video``;
+const Header = styled.div`
+  width: 90%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem;
+  background-color: rgba(255, 255, 255, 0.8);
+  border-radius: 10px;
+  margin: 1rem auto;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+
+  h1 {
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: #333;
+    @media (max-width: 728px) {
+      font-size: 1.2rem;
+      text-align: center;
+      width: 100%;
+    }
+  }
+
+  .meeting-status {
+    display: flex;
+    align-items: center;
+
+    span {
+      color: #555;
+      margin-left: 0.5rem;
+    }
+  }
+
+  @media (max-width: 728px) {
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: space-between;
+    .meeting-status {
+      margin-top: 0.5rem;
+    }
+  }
+`;
+
+const StatusDot = styled.span`
+  color: #ff4d4f;
+  font-size: 1.2rem;
+  margin-right: 0.5rem;
+`;
+
+const ModeratorBadge = styled.span`
+  background-color: #ffa940;
+  color: white;
+  padding: 0.2rem 0.5rem;
+  border-radius: 0.25rem;
+  margin-left: 0.5rem;
+  font-size: 0.8rem;
+  font-weight: bold;
+`;
+
+const LeaveButton = styled.button`
+  background-color: #ff4d4f;
+  color: white;
+  padding: 0.5rem 1rem;
+  border-radius: 0.25rem;
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+
+  &:hover {
+    background-color: #ff7875;
+  }
+`;
+
+const VideoContainer = styled.div`
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1rem;
+  padding: 1rem;
+  flex-grow: 1;
+  overflow-y: auto;
+  height: 90%;
+  width: 94%;
+  border-radius: 10px;
+  margin: 0 auto;
+  background-color: rgba(0, 0, 0, 0.8);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+`;
 
 const VideoBox = styled.div`
   position: relative;
   display: flex;
   justify-content: center;
   align-items: center;
-  > video {
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+  transition: transform 0.3s ease;
+
+  &:hover {
+    transform: scale(1.02);
   }
 
-  :hover {
-    > i {
-      display: block;
-    }
+  > video {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
   }
 `;
 
 const UserName = styled.div`
   position: absolute;
-  font-size: calc(20px + 5vmin);
-  z-index: 1;
+  bottom: 10px;
+  left: 10px;
+  background-color: rgba(0, 0, 0, 0.6);
+  color: white;
+  padding: 0.2rem 0.5rem;
+  border-radius: 0.25rem;
+  font-size: 0.9rem;
 `;
 
 const FaIcon = styled.i`
@@ -488,6 +576,22 @@ const FaIcon = styled.i`
   position: absolute;
   right: 15px;
   top: 15px;
+  color: white;
+  background-color: rgba(0, 0, 0, 0.5);
+  padding: 0.5rem;
+  border-radius: 50%;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+
+  &:hover {
+    background-color: rgba(0, 0, 0, 0.7);
+  }
+`;
+
+const MyVideo = styled.video`
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 `;
 
 export default Room;
