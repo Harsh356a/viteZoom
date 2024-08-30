@@ -1,45 +1,67 @@
-import React, { useRef, useState, useEffect } from 'react';
-import styled from 'styled-components';
-import socket from '../../socket';
-import { useNavigate } from 'react-router-dom';
+import React, { useRef, useState, useEffect } from "react";
+import styled from "styled-components";
+import socket from "../../socket";
+import { useNavigate } from "react-router-dom";
 
 const Main = () => {
-  
   const roomRef = useRef();
   const userRef = useRef();
   const [err, setErr] = useState(false);
-  const [errMsg, setErrMsg] = useState('');
+  const [errMsg, setErrMsg] = useState("");
 
   const navigate = useNavigate();
 
   useEffect(() => {
-
-    socket.on('FE-error-user-exist', ({ error }) => {
+    // Socket listener for checking user existence
+    socket.on("FE-error-user-exist", ({ error }) => {
       if (!error) {
         const roomName = roomRef.current.value;
         const userName = userRef.current.value;
 
-        sessionStorage.setItem('user', userName);
-        // props.history.push(`/room/${roomName}`); since we are using react-router-dom v6, we need to use the navigate function
+        sessionStorage.setItem("user", userName);
         navigate(`/room/${roomName}`);
       } else {
         setErr(error);
-        setErrMsg('User name already exist');
+        setErrMsg("User name already exists");
       }
     });
+
+    // Set up a continuous effect to watch localStorage for changes
+    const handleStorageChange = () => {
+      const recentRoom = localStorage.getItem("recentRoom");
+      const recentUsername = localStorage.getItem("recentUsername");
+
+      if (recentRoom && recentUsername) {
+        socket.emit("BE-check-user", { roomId: recentRoom, userName: recentUsername });
+        console.log("Emitted to socket: ", { roomId: recentRoom, userName: recentUsername });
+      }
+    };
+
+    // Emit on component mount and whenever the localStorage values change
+    window.addEventListener('storage', handleStorageChange);
+
+    // Emit immediately if the values are already in localStorage
+    handleStorageChange();
+
+    return () => {
+      socket.off("FE-error-user-exist"); // Cleanup socket listener
+      window.removeEventListener('storage', handleStorageChange); // Cleanup event listener
+    };
   }, []);
 
   function clickJoin() {
     const roomName = roomRef.current.value;
     const userName = userRef.current.value;
-    console.log('roomName: ', roomName);
 
     if (!roomName || !userName) {
       setErr(true);
-      setErrMsg('Enter Room Name or User Name');
+      setErrMsg("Enter Room Name or User Name");
     } else {
-      socket.emit('BE-check-user', { roomId: roomName, userName });
-      console.log('BE-check-user: ', { roomId: roomName, userName });
+      localStorage.setItem("recentRoom", roomName);
+      localStorage.setItem("recentUsername", userName);
+
+      socket.emit("BE-check-user", { roomId: roomName, userName });
+      console.log("BE-check-user: ", { roomId: roomName, userName });
     }
   }
 

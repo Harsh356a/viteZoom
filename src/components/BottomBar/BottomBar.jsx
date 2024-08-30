@@ -1,5 +1,5 @@
-import React, { useCallback } from 'react';
-import styled from 'styled-components';
+import React, { useCallback, useEffect, useState } from "react";
+import styled from "styled-components";
 
 const BottomBar = ({
   clickChat,
@@ -11,7 +11,8 @@ const BottomBar = ({
   screenShare,
   videoDevices,
   showVideoDevices,
-  setShowVideoDevices
+  setShowVideoDevices,
+  toggleBreakoutRooms, // Add this prop
 }) => {
   const handleToggle = useCallback(
     (e) => {
@@ -19,16 +20,16 @@ const BottomBar = ({
     },
     [setShowVideoDevices]
   );
-
+ 
   return (
     <Bar>
       <Left>
-        <CameraButton onClick={toggleCameraAudio} data-switch='video'>
+        <CameraButton onClick={toggleCameraAudio} data-switch="video">
           <div>
             {userVideoAudio.video ? (
-              <FaIcon className='fas fa-video'></FaIcon>
+              <FaIcon className="fas fa-video"></FaIcon>
             ) : (
-              <FaIcon className='fas fa-video-slash'></FaIcon>
+              <FaIcon className="fas fa-video-slash"></FaIcon>
             )}
           </div>
           Camera
@@ -37,20 +38,28 @@ const BottomBar = ({
           <SwitchList>
             {videoDevices.length > 0 &&
               videoDevices.map((device) => {
-                return <div key={device.deviceId} onClick={clickCameraDevice} data-value={device.deviceId} >{device.label}</div>;
+                return (
+                  <div
+                    key={device.deviceId}
+                    onClick={clickCameraDevice}
+                    data-value={device.deviceId}
+                  >
+                    {device.label}
+                  </div>
+                );
               })}
             <div>Switch Camera</div>
           </SwitchList>
         )}
         <SwitchMenu onClick={handleToggle}>
-          <i className='fas fa-angle-up'></i>
+          <i className="fas fa-angle-up"></i>
         </SwitchMenu>
-        <CameraButton onClick={toggleCameraAudio} data-switch='audio'>
+        <CameraButton onClick={toggleCameraAudio} data-switch="audio">
           <div>
             {userVideoAudio.audio ? (
-              <FaIcon className='fas fa-microphone'></FaIcon>
+              <FaIcon className="fas fa-microphone"></FaIcon>
             ) : (
-              <FaIcon className='fas fa-microphone-slash'></FaIcon>
+              <FaIcon className="fas fa-microphone-slash"></FaIcon>
             )}
           </div>
           Audio
@@ -59,14 +68,17 @@ const BottomBar = ({
       <Center>
         <ChatButton onClick={clickChat}>
           <div>
-            <FaIcon className='fas fa-comments'></FaIcon>
+            <FaIcon className="fas fa-comments"></FaIcon>
           </div>
           Chat
         </ChatButton>
+        <BreakoutButton onClick={toggleBreakoutRooms}>
+          <i className="fas fa-users"></i>
+        </BreakoutButton>
         <ScreenButton onClick={clickScreenSharing}>
           <div>
             <FaIcon
-              className={`fas fa-desktop ${screenShare ? 'sharing' : ''}`}
+              className={`fas fa-desktop ${screenShare ? "sharing" : ""}`}
             ></FaIcon>
           </div>
           Share Screen
@@ -81,15 +93,16 @@ const BottomBar = ({
 
 const Bar = styled.div`
   position: absolute;
-  right: 0;
+  right: 50px;
   bottom: 0;
-  width: 100%;
+  width: 95%;
+  border-radius:10px;
   height: 8%;
   display: flex;
   justify-content: center;
   align-items: center;
   font-weight: 500;
-  background-color: #4ea1d3;
+  background-color: #000;
 `;
 const Left = styled.div`
   display: flex;
@@ -107,6 +120,22 @@ const Center = styled.div`
 const Right = styled.div``;
 
 const ChatButton = styled.div`
+  width: 75px;
+  border: none;
+  font-size: 0.9375rem;
+  padding: 5px;
+
+  :hover {
+    background-color: #77b7dd;
+    cursor: pointer;
+    border-radius: 15px;
+  }
+
+  * {
+    pointer-events: none;
+  }
+`;
+const BreakoutButton = styled.div`
   width: 75px;
   border: none;
   font-size: 0.9375rem;
