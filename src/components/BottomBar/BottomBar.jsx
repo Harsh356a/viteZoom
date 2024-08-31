@@ -15,16 +15,16 @@ const BottomBar = ({
   setShowVideoDevices,
   toggleBreakoutRooms,
 }) => {
-  const [showVideoDevices, setShowVideoDevices] = useState(false);
+  const [showVideoDevices1, setShowVideoDevices1] = useState(false);
   const location = useLocation(); // Get current location
   const queryParams = new URLSearchParams(location.search);
   const isAction = queryParams.get("isaction"); // Extract the 'isaction' query parameter
 
   const handleToggle = useCallback(
     (e) => {
-      setShowVideoDevices((state) => !state);
+      setShowVideoDevices1((state) => !state);
     },
-    [setShowVideoDevices]
+    [setShowVideoDevices1]
   );
 
   const role = localStorage.getItem("roletoban"); // Example role value
@@ -51,7 +51,7 @@ const BottomBar = ({
           </div>
           Camera
         </CameraButton>
-        {showVideoDevices && (
+        {showVideoDevices1 && (
           <SwitchList>
             {videoDevices.length > 0 &&
               videoDevices.map((device) => {
