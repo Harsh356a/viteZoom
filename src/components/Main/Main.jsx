@@ -1,68 +1,45 @@
-import React, { useState, useEffect } from "react";
-import styled from "styled-components";
-import socket from "../../socket";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import React, { useRef, useState, useEffect } from 'react';
+import styled from 'styled-components';
+import socket from '../../socket';
+import { useNavigate } from 'react-router-dom';
 
 const Main = () => {
-  const [searchParams] = useSearchParams();
-
-  // Extract query parameters and set initial state
-  const [roomName, setRoomName] = useState( "");
-  const [userName, setUserName] = useState("");
   
+  const roomRef = useRef();
+  const userRef = useRef();
   const [err, setErr] = useState(false);
-  const [errMsg, setErrMsg] = useState("");
+  const [errMsg, setErrMsg] = useState('');
+
   const navigate = useNavigate();
 
   useEffect(() => {
-    // Socket listener for checking user existence
-    socket.on("FE-error-user-exist", ({ error }) => {
-      if (!error) {
-        sessionStorage.setItem("user", userName);
-        const recentRoom = localStorage.getItem("recentRoom");
 
-        navigate(`/room/${recentRoom}?name=${userName}&room=${roomName}`);
+    socket.on('FE-error-user-exist', ({ error }) => {
+      if (!error) {
+        const roomName = roomRef.current.value;
+        const userName = userRef.current.value;
+
+        sessionStorage.setItem('user', userName);
+        // props.history.push(`/room/${roomName}`); since we are using react-router-dom v6, we need to use the navigate function
+        navigate(`/room/${roomName}`);
       } else {
         setErr(error);
-        setErrMsg("User name already exists");
+        setErrMsg('User name already exist');
       }
     });
-
-    const handleStorageChange = () => {
-      const recentRoom = localStorage.getItem("recentRoom");
-      const recentUsername = localStorage.getItem("recentUsername");
-
-      if (recentRoom && recentUsername) {
-        socket.emit("BE-check-user", {
-          roomId: recentRoom,
-          userName: recentUsername,
-        });
-        console.log("Emitted to socket: ", {
-          roomId: recentRoom,
-          userName: recentUsername,
-        });
-      }
-    };
-
-    window.addEventListener("storage", handleStorageChange);
-    handleStorageChange();
-
-    return () => {
-      socket.off("FE-error-user-exist");
-      window.removeEventListener("storage", handleStorageChange);
-    };
-  }, [roomName, userName, navigate]);
+  }, []);
 
   function clickJoin() {
+    const roomName = roomRef.current.value;
+    const userName = userRef.current.value;
+    console.log('roomName: ', roomName);
+
     if (!roomName || !userName) {
       setErr(true);
-      setErrMsg("Enter Room Name or User Name");
+      setErrMsg('Enter Room Name or User Name');
     } else {
-      localStorage.setItem("recentRoom", roomName);
-      localStorage.setItem("recentUsername", userName);
-
-      socket.emit("BE-check-user", { roomId: roomName, userName });
-      console.log("BE-check-user: ", { roomId: roomName, userName });
+      socket.emit('BE-check-user', { roomId: roomName, userName });
+      console.log('BE-check-user: ', { roomId: roomName, userName });
     }
   }
 
@@ -70,21 +47,11 @@ const Main = () => {
     <MainContainer>
       <Row>
         <Label htmlFor="roomName">Room Name</Label>
-        <Input
-          type="text"
-          id="roomName"
-          value={roomName}
-          onChange={(e) => setRoomName(e.target.value)}
-        />
+        <Input type="text" id="roomName" ref={roomRef} />
       </Row>
       <Row>
         <Label htmlFor="userName">User Name</Label>
-        <Input
-          type="text"
-          id="userName"
-          value={userName}
-          onChange={(e) => setUserName(e.target.value)}
-        />
+        <Input type="text" id="userName" ref={userRef} />
       </Row>
       <JoinButton onClick={clickJoin}> Join </JoinButton>
       {err ? <Error>{errMsg}</Error> : null}
