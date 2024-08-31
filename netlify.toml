@@ -1,0 +1,10 @@
+[build]
+  # Directory where your build output is located (e.g., "build" for React)
+  publish = "build"
+  command = "npm run build"
+
+[[redirects]]
+  # Catch-all redirect to handle all routes and serve index.html
+  from = "/*"
+  to = "/index.html"
+  status = 200
