@@ -364,22 +364,8 @@ const Room = () => {
   const role = localStorage.getItem("roletoban"); // Example role value
   return (
     <RoomContainer onClick={clickBackground}>
-      <Header>
-        <div style={{display:'flex', gap:"20px",alignItems:'center'}}>
-        <Title>On Going Meeting</Title>
-          <ModeratorView>Moderator View</ModeratorView>
-          </div>
-        <Controls>
-
-          <p style={{fontSize:"40px" ,color:"orange",fontWeight:"900"}} >AMPLIFY</p  >
-        </Controls>
-      </Header>
-      <Header>
-        <Title>MEETING 01 - PROJECT NAME</Title>
-        <Controls>
-          <LeaveButton>Leave</LeaveButton>
-        </Controls>
-      </Header>
+    
+     
       <VideoAndBarContainer>
         <VideoContainer>
           {/* Current User Video */}
