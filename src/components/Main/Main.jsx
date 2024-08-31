@@ -1,14 +1,19 @@
 import React, { useRef, useState, useEffect } from "react";
 import styled from "styled-components";
 import socket from "../../socket";
-import { useNavigate } from "react-router-dom";
+import { useNavigate,useSearchParams  } from "react-router-dom";
 
 const Main = () => {
-  const roomRef = useRef();
-  const userRef = useRef();
+  const [searchParams] = useSearchParams();
+  const paramValue = searchParams.get('name');
+  const roomRef = useRef(paramValue1);
+  const userRef = useRef(paramValue);
+  const paramValue1 = searchParams.get('room');
+
+  console.log(paramValue,paramValue1)
   const [err, setErr] = useState(false);
   const [errMsg, setErrMsg] = useState("");
-
+const 
   const navigate = useNavigate();
 
   useEffect(() => {
