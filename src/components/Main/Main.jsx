@@ -1,21 +1,15 @@
-import React, { useRef, useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import styled from "styled-components";
 import socket from "../../socket";
 import { useNavigate, useSearchParams } from "react-router-dom";
 
 const Main = () => {
   const [searchParams] = useSearchParams();
-  
-  // Get the values from the query parameters
-  const paramValue = searchParams.get('name');
-  const paramValue1 = searchParams.get('room');
-  
-  // Initialize the refs with the query parameter values
-  const roomRef = useRef(paramValue1 || "");
-  const userRef = useRef(paramValue || "");
-  
-  console.log(paramValue, paramValue1);
 
+  // Extract query parameters and set initial state
+  const [roomName, setRoomName] = useState(searchParams.get('room') || "");
+  const [userName, setUserName] = useState(searchParams.get('name') || "");
+  
   const [err, setErr] = useState(false);
   const [errMsg, setErrMsg] = useState("");
   const navigate = useNavigate();
@@ -24,9 +18,6 @@ const Main = () => {
     // Socket listener for checking user existence
     socket.on("FE-error-user-exist", ({ error }) => {
       if (!error) {
-        const roomName = roomRef.current;
-        const userName = userRef.current;
-
         sessionStorage.setItem("user", userName);
         const recentRoom = localStorage.getItem("recentRoom");
 
@@ -37,7 +28,6 @@ const Main = () => {
       }
     });
 
-    // Set up a continuous effect to watch localStorage for changes
     const handleStorageChange = () => {
       const recentRoom = localStorage.getItem("recentRoom");
       const recentUsername = localStorage.getItem("recentUsername");
@@ -54,22 +44,16 @@ const Main = () => {
       }
     };
 
-    // Emit on component mount and whenever the localStorage values change
     window.addEventListener("storage", handleStorageChange);
-
-    // Emit immediately if the values are already in localStorage
     handleStorageChange();
 
     return () => {
-      socket.off("FE-error-user-exist"); // Cleanup socket listener
-      window.removeEventListener("storage", handleStorageChange); // Cleanup event listener
+      socket.off("FE-error-user-exist");
+      window.removeEventListener("storage", handleStorageChange);
     };
-  }, []);
+  }, [roomName, userName, navigate]);
 
   function clickJoin() {
-    const roomName = roomRef.current;
-    const userName = userRef.current;
-
     if (!roomName || !userName) {
       setErr(true);
       setErrMsg("Enter Room Name or User Name");
@@ -86,11 +70,21 @@ const Main = () => {
     <MainContainer>
       <Row>
         <Label htmlFor="roomName">Room Name</Label>
-        <Input type="text" id="roomName" ref={roomRef} defaultValue={paramValue1} />
+        <Input
+          type="text"
+          id="roomName"
+          value={roomName}
+          onChange={(e) => setRoomName(e.target.value)}
+        />
       </Row>
       <Row>
         <Label htmlFor="userName">User Name</Label>
-        <Input type="text" id="userName" ref={userRef} defaultValue={paramValue} />
+        <Input
+          type="text"
+          id="userName"
+          value={userName}
+          onChange={(e) => setUserName(e.target.value)}
+        />
       </Row>
       <JoinButton onClick={clickJoin}> Join </JoinButton>
       {err ? <Error>{errMsg}</Error> : null}
