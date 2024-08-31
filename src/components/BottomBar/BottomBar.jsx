@@ -1,6 +1,6 @@
-import React, { useCallback, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
+import { useLocation } from "react-router-dom";
 import styled from "styled-components";
-import { useLocation } from "react-router-dom"; // Import useLocation hook
 
 const BottomBar = ({
   clickChat,
@@ -13,29 +13,20 @@ const BottomBar = ({
   videoDevices,
   showVideoDevices,
   setShowVideoDevices,
-  toggleBreakoutRooms,
+  toggleBreakoutRooms, // Add this prop
 }) => {
-  const [showVideoDevices1, setShowVideoDevices1] = useState(false);
-  const location = useLocation(); // Get current location
-  const queryParams = new URLSearchParams(location.search);
-  const isAction = queryParams.get("isaction"); // Extract the 'isaction' query parameter
-
   const handleToggle = useCallback(
     (e) => {
-      setShowVideoDevices1((state) => !state);
+      setShowVideoDevices((state) => !state);
     },
-    [setShowVideoDevices1]
+    [setShowVideoDevices]
   );
-
   const role = localStorage.getItem("roletoban"); // Example role value
-
-  // If 'isaction' is false or not present, return null to hide the BottomBar
-  if (isAction === "false" || isAction === null) {
-    return null;
-  }
-
+  const location = useLocation(); // Get current location
+  const queryParams = new URLSearchParams(location.search);
+  const isAction = queryParams.get("isaction"); // Extract
   return (
-    <Bar>
+    <Bar style={{ display: isAction === "false" ? "none" : "flex" }}>
       <Left>
         <CameraButton
           onClick={toggleCameraAudio}
@@ -51,7 +42,7 @@ const BottomBar = ({
           </div>
           Camera
         </CameraButton>
-        {showVideoDevices1 && (
+        {showVideoDevices && (
           <SwitchList>
             {videoDevices.length > 0 &&
               videoDevices.map((device) => {
@@ -89,11 +80,12 @@ const BottomBar = ({
       <Center>
         <ScreenButton
           className={role === "Observer" ? "disabled" : ""}
-          onClick={role !== "Observer" ? clickScreenSharing : undefined}
+          onClick={role !== "Observer" ? clickScreenSharing : undefined} // Prevent click if role is "Observer"
         >
           <div>
             <FaIcon
               className={`fas fa-desktop ${screenShare ? "sharing" : ""}`}
+              // Disable the button if the role is "Observer"
             ></FaIcon>
           </div>
           Share Screen
@@ -106,9 +98,9 @@ const BottomBar = ({
   );
 };
 
-// Styled-components
 const Bar = styled.div`
   position: absolute;
+  // margin:0 ,auto;
   right: 45px;
   bottom: 0;
   width: 95%;
@@ -120,10 +112,10 @@ const Bar = styled.div`
   font-weight: 500;
   background-color: #000;
 `;
-
 const Left = styled.div`
   display: flex;
   align-items: center;
+
   margin-left: 15px;
 `;
 
@@ -134,6 +126,29 @@ const Center = styled.div`
 `;
 
 const Right = styled.div``;
+
+const ChatButton = styled.div`
+  width: 75px;
+  border: none;
+  font-size: 0.9375rem;
+  padding: 5px;
+
+  :hover {
+    background-color: #77b7dd;
+    cursor: pointer;
+    border-radius: 15px;
+  }
+
+  * {
+    pointer-events: none;
+  }
+
+  &.disabled {
+    opacity: 0.5;
+    pointer-events: none;
+    cursor: not-allowed;
+  }
+`;
 
 const CameraButton = styled.div`
   position: relative;
