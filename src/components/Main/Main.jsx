@@ -1,16 +1,21 @@
 import React, { useRef, useState, useEffect } from "react";
 import styled from "styled-components";
 import socket from "../../socket";
-import { useNavigate,useSearchParams  } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 
 const Main = () => {
   const [searchParams] = useSearchParams();
+  
+  // Get the values from the query parameters
   const paramValue = searchParams.get('name');
-  const roomRef = useRef(paramValue1);
-  const userRef = useRef(paramValue);
   const paramValue1 = searchParams.get('room');
+  
+  // Initialize the refs with the query parameter values
+  const roomRef = useRef(paramValue1 || "");
+  const userRef = useRef(paramValue || "");
+  
+  console.log(paramValue, paramValue1);
 
-  console.log(paramValue,paramValue1)
   const [err, setErr] = useState(false);
   const [errMsg, setErrMsg] = useState("");
   const navigate = useNavigate();
@@ -19,8 +24,8 @@ const Main = () => {
     // Socket listener for checking user existence
     socket.on("FE-error-user-exist", ({ error }) => {
       if (!error) {
-        const roomName = roomRef.current.value;
-        const userName = userRef.current.value;
+        const roomName = roomRef.current;
+        const userName = userRef.current;
 
         sessionStorage.setItem("user", userName);
         const recentRoom = localStorage.getItem("recentRoom");
@@ -62,8 +67,8 @@ const Main = () => {
   }, []);
 
   function clickJoin() {
-    const roomName = roomRef.current.value;
-    const userName = userRef.current.value;
+    const roomName = roomRef.current;
+    const userName = userRef.current;
 
     if (!roomName || !userName) {
       setErr(true);
@@ -81,11 +86,11 @@ const Main = () => {
     <MainContainer>
       <Row>
         <Label htmlFor="roomName">Room Name</Label>
-        <Input type="text" id="roomName" ref={roomRef} />
+        <Input type="text" id="roomName" ref={roomRef} defaultValue={paramValue1} />
       </Row>
       <Row>
         <Label htmlFor="userName">User Name</Label>
-        <Input type="text" id="userName" ref={userRef} />
+        <Input type="text" id="userName" ref={userRef} defaultValue={paramValue} />
       </Row>
       <JoinButton onClick={clickJoin}> Join </JoinButton>
       {err ? <Error>{errMsg}</Error> : null}
