@@ -1,46 +1,56 @@
-import React, { useRef, useState, useEffect } from 'react';
-import styled from 'styled-components';
-import socket from '../../socket';
-import { useNavigate } from 'react-router-dom';
-
+import React, { useRef, useState, useEffect } from "react";
+import styled from "styled-components";
+import socket from "../../socket";
+import { useNavigate, useLocation } from "react-router-dom";
 const Main = () => {
-  
   const roomRef = useRef();
   const userRef = useRef();
   const [err, setErr] = useState(false);
-  const [errMsg, setErrMsg] = useState('');
-
+  const [errMsg, setErrMsg] = useState("");
   const navigate = useNavigate();
+  const location = useLocation();
 
   useEffect(() => {
+    // Extract roomName and userName from URL parameters
+    const searchParams = new URLSearchParams(location.search);
+    const roomName = searchParams.get("roomName");
+    const userName = searchParams.get("userName");
 
-    socket.on('FE-error-user-exist', ({ error }) => {
+    if (roomName && userName) {
+      // If both parameters are present, automatically join the room
+      joinRoom(roomName, userName);
+    }
+  }, [location]);
+
+  useEffect(() => {
+    socket.on("FE-error-user-exist", ({ error }) => {
       if (!error) {
         const roomName = roomRef.current.value;
         const userName = userRef.current.value;
 
-        sessionStorage.setItem('user', userName);
-        // props.history.push(`/room/${roomName}`); since we are using react-router-dom v6, we need to use the navigate function
+        sessionStorage.setItem("user", userName);
         navigate(`/room/${roomName}`);
       } else {
         setErr(error);
-        setErrMsg('User name already exist');
+        setErrMsg("User name already exist");
       }
     });
-  }, []);
+  }, [navigate]);
+
+  function joinRoom(roomName, userName) {
+    if (!roomName || !userName) {
+      setErr(true);
+      setErrMsg("Enter Room Name or User Name");
+    } else {
+      socket.emit("BE-check-user", { roomId: roomName, userName });
+      console.log("BE-check-user: ", { roomId: roomName, userName });
+    }
+  }
 
   function clickJoin() {
     const roomName = roomRef.current.value;
     const userName = userRef.current.value;
-    console.log('roomName: ', roomName);
-
-    if (!roomName || !userName) {
-      setErr(true);
-      setErrMsg('Enter Room Name or User Name');
-    } else {
-      socket.emit('BE-check-user', { roomId: roomName, userName });
-      console.log('BE-check-user: ', { roomId: roomName, userName });
-    }
+    joinRoom(roomName, userName);
   }
 
   return (
