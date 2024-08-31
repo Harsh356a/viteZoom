@@ -7,8 +7,8 @@ const Main = () => {
   const [searchParams] = useSearchParams();
 
   // Extract query parameters and set initial state
-  const [roomName, setRoomName] = useState(searchParams.get('room') || "");
-  const [userName, setUserName] = useState(searchParams.get('name') || "");
+  const [roomName, setRoomName] = useState( "");
+  const [userName, setUserName] = useState("");
   
   const [err, setErr] = useState(false);
   const [errMsg, setErrMsg] = useState("");
