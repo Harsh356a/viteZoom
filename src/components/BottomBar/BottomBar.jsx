@@ -75,15 +75,7 @@ const BottomBar = ({
         </CameraButton>
       </Left>
       <Center>
-        <ChatButton
-          onClick={clickChat}
-          className={role === "Observer" ? "disabled" : ""}
-        >
-          <div>
-            <FaIcon className="fas fa-comments"></FaIcon>
-          </div>
-          Chat
-        </ChatButton>
+       
 
         <ScreenButton
           className={role === "Observer" ? "disabled" : ""}
