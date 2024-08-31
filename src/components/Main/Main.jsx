@@ -13,7 +13,6 @@ const Main = () => {
   console.log(paramValue,paramValue1)
   const [err, setErr] = useState(false);
   const [errMsg, setErrMsg] = useState("");
-const 
   const navigate = useNavigate();
 
   useEffect(() => {
