@@ -21,7 +21,7 @@ const Main = () => {
         sessionStorage.setItem("user", userName);
         const recentRoom = localStorage.getItem("recentRoom");
 
-        navigate(`/room/${recentRoom}`);
+        navigate(`/room/${recentRoom}?name="harsh"&room="room1"`);
       } else {
         setErr(error);
         setErrMsg("User name already exists");
