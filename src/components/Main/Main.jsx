@@ -25,28 +25,29 @@ const Main = () => {
         roomName: roomName,
         userName: userName,
       });
+      navigate(`/room/${roomName}`);
     }
-  }, [location]);
+  });
 
-  useEffect(() => {
-    const searchParams = new URLSearchParams(location.search);
-    const roomName11 = searchParams.get("roomName")?.replace(/['"]+/g, "");
-    const userName = searchParams.get("userName")?.replace(/['"]+/g, "");
-    if (userName) {
-      socket.on("FE-error-user-exist", ({ error }) => {
-        if (!error) {
-          const roomName = roomRef.current.value;
-          const userName = userRef.current.value;
-          console.log(roomName11, "jdbceb");
-          sessionStorage.setItem("user", userName);
-          navigate(`/room/${roomName11}`);
-        } else {
-          setErr(error);
-          setErrMsg("User name already exist");
-        }
-      });
-    }
-  }, [location]);
+  // useEffect(() => {
+  //   const searchParams = new URLSearchParams(location.search);
+  //   const roomName11 = searchParams.get("roomName")?.replace(/['"]+/g, "");
+  //   const userName = searchParams.get("userName")?.replace(/['"]+/g, "");
+  //   if (userName) {
+  //     socket.on("FE-error-user-exist", ({ error }) => {
+  //       if (!error) {
+  //         // const roomName = roomRef.current.value;
+  //         // const userName = userRef.current.value;
+  //         console.log(roomName11, "jdbceb");
+  //         sessionStorage.setItem("user", userName);
+  //         navigate(`/room/${roomName11}`);
+  //       } else {
+  //         setErr(error);
+  //         setErrMsg("User name already exist");
+  //       }
+  //     });
+  //   }
+  // }, [location]);
 
   function joinRoom() {
     const searchParams = new URLSearchParams(location.search);
@@ -62,6 +63,8 @@ const Main = () => {
         roomName: roomName,
         userName: userName,
       });
+      navigate(`/room/${roomName}`);
+
     }
   }
 
