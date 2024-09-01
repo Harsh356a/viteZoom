@@ -28,6 +28,9 @@ const Main = () => {
   useEffect(() => {
     let userName1 = localStorage.getItem("userName");
     let roomName1 = localStorage.getItem("roomName");
+    if(userName1 && roomName1){
+      navigate(`/room/${roomName1}`);
+    }
     socket.on("FE-error-user-exist", ({ error }) => {
       if (!error) {
         const roomName = roomRef.current?.value || roomName1;
