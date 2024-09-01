@@ -14,26 +14,22 @@ const Main = () => {
   useEffect(() => {
     // Extract roomName and userName from URL parameters
     const searchParams = new URLSearchParams(location.search);
-    const userName = searchParams.get("userName")?.replace(/['"]+/g, '');
-    const roomName = searchParams.get("roomName")?.replace(/['"]+/g, '');
-    
-    console.log("checking here", userName, roomName);
+    const userName = searchParams.get("userName")?.replace(/['"]+/g, "");
+    const roomName = searchParams.get("roomName")?.replace(/['"]+/g, "");
 
-    if (roomName && userName) {
-      // If both parameters are present, automatically join the room
-      joinRoom(roomName, userName);
-    }
+    console.log("checking here", userName, roomName);
+    socket.emit("BE-check-user", { "roomName": roomName, "userName": userName });
   }, [location]);
 
   useEffect(() => {
     const searchParams = new URLSearchParams(location.search);
-    const roomName11 = searchParams.get("roomName")?.replace(/['"]+/g, '');
+    const roomName11 = searchParams.get("roomName")?.replace(/['"]+/g, "");
 
     socket.on("FE-error-user-exist", ({ error }) => {
       if (!error) {
         const roomName = roomRef.current.value;
         const userName = userRef.current.value;
-console.log(roomName11,"jdbceb")
+        console.log(roomName11, "jdbceb");
         sessionStorage.setItem("user", userName);
         navigate(`/room/${roomName11}`);
       } else {
@@ -43,14 +39,20 @@ console.log(roomName11,"jdbceb")
     });
   });
 
-  function joinRoom(roomName, userName) {
+  function joinRoom() {
+    const searchParams = new URLSearchParams(location.search);
+    const userName = searchParams.get("userName")?.replace(/['"]+/g, "");
+    const roomName = searchParams.get("roomName")?.replace(/['"]+/g, "");
     console.log("test in vite", roomName, userName);
     if (!roomName || !userName) {
       setErr(true);
       setErrMsg("Enter Room Name or User Name");
     } else {
-      socket.emit("BE-check-user", { "roomName": roomName, "userName":userName });
-      console.log("BE-check-user: ", { "roomName": roomName, "userName":userName  });
+      socket.emit("BE-check-user", { roomName: roomName, userName: userName });
+      console.log("BE-check-user: ", {
+        roomName: roomName,
+        userName: userName,
+      });
     }
   }
 
