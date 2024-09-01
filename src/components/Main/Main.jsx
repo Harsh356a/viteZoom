@@ -15,7 +15,7 @@ const Main = () => {
     const searchParams = new URLSearchParams(location.search);
     const roomName = searchParams.get("roomName");
     const userName = searchParams.get("userName");
-
+console.log("checking here",roomName,userName)
     if (roomName && userName) {
       // If both parameters are present, automatically join the room
       joinRoom(roomName, userName);
