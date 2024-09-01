@@ -19,17 +19,17 @@ const Main = () => {
     let userName1 = localStorage.getItem("userName");
     let roomName1 = localStorage.getItem("roomName");
     console.log("URL parameters:", userName1, roomName1);
-    console.log(roomName1,userName1)
-    if (roomName1!="undefined" && userName1!="undefined") {
+    console.log(roomName1, userName1);
+    if (roomName1 != "undefined" && userName1 != "undefined") {
       // If both parameters are present, automatically join the room
       joinRoom(roomName1, userName1);
     }
-  });
+  }, []);
 
   useEffect(() => {
     let userName1 = localStorage.getItem("userName");
     let roomName1 = localStorage.getItem("roomName");
-    if(roomName1!="undefined" && userName1!="undefined"){
+    if (roomName1 != "undefined" && userName1 != "undefined") {
       navigate(`/room/${roomName1}`);
     }
     socket.on("FE-error-user-exist", ({ error }) => {
@@ -49,7 +49,7 @@ const Main = () => {
     return () => {
       socket.off("FE-error-user-exist");
     };
-  }, [navigate, location]);
+  }, []);
 
   function joinRoom(roomName, userName) {
     console.log("Attempting to join room:", roomName, userName);
