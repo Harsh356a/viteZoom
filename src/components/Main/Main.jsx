@@ -16,6 +16,7 @@ const Main = () => {
     const userName = searchParams.get("userName")?.replace(/['"]+/g, "");
     const roomName = searchParams.get("roomName")?.replace(/['"]+/g, "");
     console.log("test in vite", roomName, userName);
+  
     if (!roomName || !userName) {
       setErr(true);
       setErrMsg("Enter Room Name or User Name");
@@ -25,9 +26,22 @@ const Main = () => {
         roomName: roomName,
         userName: userName,
       });
+  
+      // Listen for user joined event
+      socket.on('FE-user-joined', ({ userName }) => {
+        console.log(`${userName} joined the room`);
+        // Add logic to display the new user's video
+      });
+  
       navigate(`/room/${roomName}`);
     }
-  });
+  
+    // Cleanup on component unmount
+    return () => {
+      socket.off('FE-user-joined');
+    };
+  }, [location]);
+  
 
   // useEffect(() => {
   //   const searchParams = new URLSearchParams(location.search);
