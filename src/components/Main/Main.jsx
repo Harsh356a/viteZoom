@@ -10,28 +10,23 @@ const Main = () => {
   const [errMsg, setErrMsg] = useState("");
   const navigate = useNavigate();
   const location = useLocation();
-
+  const searchParams = new URLSearchParams(location.search);
+  const userName = searchParams.get("userName")?.replace(/['"]+/g, "");
+  const roomName = searchParams.get("roomName")?.replace(/['"]+/g, "");
+  let userName1 = localStorage.setItem("userName", userName);
+  let roomName1 = localStorage.setItem("roomName", roomName);
   useEffect(() => {
-    // Extract roomName and userName from URL parameters
-    const searchParams = new URLSearchParams(location.search);
-    const userName = searchParams.get("userName")?.replace(/['"]+/g, '');
-    const roomName = searchParams.get("roomName")?.replace(/['"]+/g, '');
-    
-    console.log("URL parameters:", userName, roomName);
-    
-    if (roomName && userName) {
+    console.log("URL parameters:", userName1, roomName1);
+    if (roomName1 && userName1) {
       // If both parameters are present, automatically join the room
-      joinRoom(roomName, userName);
+      joinRoom(roomName1, userName1);
     }
-  }, [location]);
+  });
 
   useEffect(() => {
-    const searchParams = new URLSearchParams(location.search);
-    const roomName11 = searchParams.get("roomName")?.replace(/['"]+/g, '');
-
     socket.on("FE-error-user-exist", ({ error }) => {
       if (!error) {
-        const roomName = roomRef.current?.value || roomName11;
+        const roomName = roomRef.current?.value || roomName1;
         const userName = userRef.current?.value;
         console.log("Joining room:", roomName, userName);
         sessionStorage.setItem("user", userName);
