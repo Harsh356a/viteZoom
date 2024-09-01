@@ -10,12 +10,13 @@ const Main = () => {
   const [errMsg, setErrMsg] = useState("");
   const navigate = useNavigate();
   const location = useLocation();
-  const searchParams = new URLSearchParams(location.search);
-  const userName = searchParams.get("userName")?.replace(/['"]+/g, "");
-  const roomName = searchParams.get("roomName")?.replace(/['"]+/g, "");
-  let userName1 = localStorage.setItem("userName", userName);
-  let roomName1 = localStorage.setItem("roomName", roomName);
+ 
   useEffect(() => {
+    const searchParams = new URLSearchParams(location.search);
+    const userName = searchParams.get("userName")?.replace(/['"]+/g, "");
+    const roomName = searchParams.get("roomName")?.replace(/['"]+/g, "");
+    let userName1 = localStorage.setItem("userName", userName);
+    let roomName1 = localStorage.setItem("roomName", roomName);
     console.log("URL parameters:", userName1, roomName1);
     if (roomName1 && userName1) {
       // If both parameters are present, automatically join the room
