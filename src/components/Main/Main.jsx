@@ -49,8 +49,8 @@ console.log(roomName11,"jdbceb")
       setErr(true);
       setErrMsg("Enter Room Name or User Name");
     } else {
-      socket.emit("BE-check-user", { "roomName": roomName, userName });
-      console.log("BE-check-user: ", { "roomName": roomName, userName });
+      socket.emit("BE-check-user", { "roomName": roomName, "userName":userName });
+      console.log("BE-check-user: ", { "roomName": roomName, "userName":userName  });
     }
   }
 
