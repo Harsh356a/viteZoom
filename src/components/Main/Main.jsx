@@ -61,7 +61,7 @@ const Main = () => {
       setErr(true);
       setErrMsg("Enter Room Name and User Name");
     } else {
-      fetch('http://localhost:3001/api/addUser', {
+      fetch('https://serverzoom-mpbv.onrender.com/api/addUser', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -97,7 +97,7 @@ const Main = () => {
       setErr(true);
       setErrMsg("Enter Room Name and User Name");
     } else {
-      fetch('http://localhost:3001/api/removeUser', {
+      fetch('https://serverzoom-mpbv.onrender.com/api/removeUser', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
