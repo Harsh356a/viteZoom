@@ -2,6 +2,7 @@ import React, { useRef, useState, useEffect } from "react";
 import styled from "styled-components";
 import socket from "../../socket";
 import { useNavigate, useLocation } from "react-router-dom";
+
 const Main = () => {
   const roomRef = useRef();
   const userRef = useRef();
@@ -13,9 +14,11 @@ const Main = () => {
   useEffect(() => {
     // Extract roomName and userName from URL parameters
     const searchParams = new URLSearchParams(location.search);
-    const roomName = searchParams.get("roomName");
-    const userName = searchParams.get("userName");
-console.log("checking here",roomName,userName)
+    const userName = searchParams.get("userName")?.replace(/['"]+/g, '');
+    const roomName = searchParams.get("roomName")?.replace(/['"]+/g, '');
+    
+    console.log("checking here", userName, roomName);
+
     if (roomName && userName) {
       // If both parameters are present, automatically join the room
       joinRoom(roomName, userName);
@@ -23,22 +26,25 @@ console.log("checking here",roomName,userName)
   }, [location]);
 
   useEffect(() => {
+    const searchParams = new URLSearchParams(location.search);
+    const roomName11 = searchParams.get("roomName")?.replace(/['"]+/g, '');
+
     socket.on("FE-error-user-exist", ({ error }) => {
       if (!error) {
         const roomName = roomRef.current.value;
         const userName = userRef.current.value;
-
+console.log(roomName11,"jdbceb")
         sessionStorage.setItem("user", userName);
-        navigate(`/room/${roomName}`);
+        navigate(`/room/${roomName11}`);
       } else {
         setErr(error);
         setErrMsg("User name already exist");
       }
     });
-  }, [navigate]);
+  });
 
   function joinRoom(roomName, userName) {
-    console.log("test in vite",roomName,userName)
+    console.log("test in vite", roomName, userName);
     if (!roomName || !userName) {
       setErr(true);
       setErrMsg("Enter Room Name or User Name");
