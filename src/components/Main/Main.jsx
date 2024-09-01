@@ -17,8 +17,8 @@ const Main = () => {
     const userName = searchParams.get("userName")?.replace(/['"]+/g, '');
     const roomName = searchParams.get("roomName")?.replace(/['"]+/g, '');
     
-    console.log("checking here", userName, roomName);
-
+    console.log("URL parameters:", userName, roomName);
+    
     if (roomName && userName) {
       // If both parameters are present, automatically join the room
       joinRoom(roomName, userName);
@@ -31,26 +31,31 @@ const Main = () => {
 
     socket.on("FE-error-user-exist", ({ error }) => {
       if (!error) {
-        const roomName = roomRef.current.value;
-        const userName = userRef.current.value;
-console.log(roomName11,"jdbceb")
+        const roomName = roomRef.current?.value || roomName11;
+        const userName = userRef.current?.value;
+        console.log("Joining room:", roomName, userName);
         sessionStorage.setItem("user", userName);
-        navigate(`/room/${roomName || roomName11}`);
+        navigate(`/room/${roomName}`);
       } else {
         setErr(error);
-        setErrMsg("User name already exist");
+        setErrMsg("User name already exists");
       }
     });
-  });
+
+    // Clean up the event listener
+    return () => {
+      socket.off("FE-error-user-exist");
+    };
+  }, [navigate, location]);
 
   function joinRoom(roomName, userName) {
-    console.log("test in vite", roomName, userName);
+    console.log("Attempting to join room:", roomName, userName);
     if (!roomName || !userName) {
       setErr(true);
-      setErrMsg("Enter Room Name or User Name");
+      setErrMsg("Enter Room Name and User Name");
     } else {
-      socket.emit("BE-check-user", { "roomName": roomName, userName });
-      console.log("BE-check-user: ", { "roomName": roomName, userName });
+      socket.emit("BE-check-user", { roomName, userName });
+      console.log("BE-check-user: ", { roomName, userName });
     }
   }
 
