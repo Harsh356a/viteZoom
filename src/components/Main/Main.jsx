@@ -12,13 +12,20 @@ const Main = () => {
   const location = useLocation();
 
   useEffect(() => {
-    // Extract roomName and userName from URL parameters
     const searchParams = new URLSearchParams(location.search);
     const userName = searchParams.get("userName")?.replace(/['"]+/g, "");
     const roomName = searchParams.get("roomName")?.replace(/['"]+/g, "");
-
-    console.log("checking here", userName, roomName);
-    socket.emit("BE-check-user", { roomName: roomName, userName: userName });
+    console.log("test in vite", roomName, userName);
+    if (!roomName || !userName) {
+      setErr(true);
+      setErrMsg("Enter Room Name or User Name");
+    } else {
+      socket.emit("BE-check-user", { roomName: roomName, userName: userName });
+      console.log("BE-check-user: ", {
+        roomName: roomName,
+        userName: userName,
+      });
+    }
   }, [location]);
 
   useEffect(() => {
