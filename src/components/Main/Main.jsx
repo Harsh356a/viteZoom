@@ -38,12 +38,13 @@ console.log("checking here",roomName,userName)
   }, [navigate]);
 
   function joinRoom(roomName, userName) {
+    console.log("test in vite",roomName,userName)
     if (!roomName || !userName) {
       setErr(true);
       setErrMsg("Enter Room Name or User Name");
     } else {
-      socket.emit("BE-check-user", { roomId: roomName, userName });
-      console.log("BE-check-user: ", { roomId: roomName, userName });
+      socket.emit("BE-check-user", { "roomName": roomName, userName });
+      console.log("BE-check-user: ", { "roomName": roomName, userName });
     }
   }
 
