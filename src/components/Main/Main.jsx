@@ -8,54 +8,35 @@ const Main = () => {
   const userRef = useRef();
   const [err, setErr] = useState(false);
   const [errMsg, setErrMsg] = useState("");
+  const [waiting, setWaiting] = useState(false);
+  const [participants, setParticipants] = useState([]);
 
   const navigate = useNavigate();
 
   useEffect(() => {
-    // Socket listener for checking user existence
     socket.on("FE-error-user-exist", ({ error }) => {
-      if (!error) {
-        const roomName = roomRef.current.value;
-        const userName = userRef.current.value;
-
-        sessionStorage.setItem("user", userName);
-        const recentRoom = localStorage.getItem("recentRoom");
-
-        navigate(`/room/${recentRoom}`);
-      } else {
-        setErr(error);
+      if (error) {
+        setErr(true);
         setErrMsg("User name already exists");
       }
     });
 
-    // Set up a continuous effect to watch localStorage for changes
-    const handleStorageChange = () => {
-      const recentRoom = localStorage.getItem("recentRoom");
-      const recentUsername = localStorage.getItem("recentUsername");
+    socket.on("FE-user-join", (users) => {
+      setParticipants(users);
+    });
 
-      if (recentRoom && recentUsername) {
-        socket.emit("BE-check-user", {
-          roomId: recentRoom,
-          userName: recentUsername,
-        });
-        console.log("Emitted to socket: ", {
-          roomId: recentRoom,
-          userName: recentUsername,
-        });
-      }
-    };
-
-    // Emit on component mount and whenever the localStorage values change
-    window.addEventListener("storage", handleStorageChange);
-
-    // Emit immediately if the values are already in localStorage
-    handleStorageChange();
+    socket.on("FE-user-leave", ({ userName }) => {
+      setParticipants((prevParticipants) =>
+        prevParticipants.filter((p) => p.info.userName !== userName)
+      );
+    });
 
     return () => {
-      socket.off("FE-error-user-exist"); // Cleanup socket listener
-      window.removeEventListener("storage", handleStorageChange); // Cleanup event listener
+      socket.off("FE-error-user-exist");
+      socket.off("FE-user-join");
+      socket.off("FE-user-leave");
     };
-  }, []);
+  }, [navigate]);
 
   function clickJoin() {
     const roomName = roomRef.current.value;
@@ -63,13 +44,80 @@ const Main = () => {
 
     if (!roomName || !userName) {
       setErr(true);
-      setErrMsg("Enter Room Name or User Name");
+      setErrMsg("Enter Room Name and User Name");
     } else {
-      localStorage.setItem("recentRoom", roomName);
-      localStorage.setItem("recentUsername", userName);
+      setErr(false);
+      socket.emit("BE-join-room", { roomId: roomName, userName });
+      sessionStorage.setItem("user", userName);
+      navigate(`/room/${roomName}`);
+    }
+  }
 
-      socket.emit("BE-check-user", { roomId: roomName, userName });
-      console.log("BE-check-user: ", { roomId: roomName, userName });
+  function addParticipant() {
+    const roomName = roomRef.current.value;
+    const userName = userRef.current.value;
+
+    if (!roomName || !userName) {
+      setErr(true);
+      setErrMsg("Enter Room Name and User Name");
+    } else {
+      fetch('http://localhost:3001/api/addUser', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ roomId: roomName, userName }),
+      })
+        .then(response => response.json())
+        .then(data => {
+          if (data.error) {
+            setErr(true);
+            setErrMsg(data.error);
+          } else {
+            setErr(false);
+            setErrMsg("");
+            // After successfully adding the user, join the room
+            socket.emit("BE-join-room", { roomId: roomName, userName });
+            sessionStorage.setItem("user", userName);
+            navigate(`/room/${roomName}`);
+          }
+        })
+        .catch(error => {
+          setErr(true);
+          setErrMsg("Error adding participant");
+        });
+    }
+  }
+
+  function removeParticipant() {
+    const roomName = roomRef.current.value;
+    const userName = userRef.current.value;
+
+    if (!roomName || !userName) {
+      setErr(true);
+      setErrMsg("Enter Room Name and User Name");
+    } else {
+      fetch('http://localhost:3001/api/removeUser', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ roomId: roomName, userName }),
+      })
+        .then(response => response.json())
+        .then(data => {
+          if (data.error) {
+            setErr(true);
+            setErrMsg(data.error);
+          } else {
+            setErr(false);
+            setErrMsg("");
+          }
+        })
+        .catch(error => {
+          setErr(true);
+          setErrMsg("Error removing participant");
+        });
     }
   }
 
@@ -83,8 +131,20 @@ const Main = () => {
         <Label htmlFor="userName">User Name</Label>
         <Input type="text" id="userName" ref={userRef} />
       </Row>
-      <JoinButton onClick={clickJoin}> Join </JoinButton>
+      <ButtonContainer>
+        <JoinButton onClick={clickJoin}>Join</JoinButton>
+        <AddButton onClick={addParticipant}>Add Participant</AddButton>
+        <RemoveButton onClick={removeParticipant}>Remove Participant</RemoveButton>
+      </ButtonContainer>
       {err ? <Error>{errMsg}</Error> : null}
+      <ParticipantList>
+        <h3>Participants:</h3>
+        <ul>
+          {participants.map((participant, index) => (
+            <li key={index}>{participant.info.userName}</li>
+          ))}
+        </ul>
+      </ParticipantList>
     </MainContainer>
   );
 };
@@ -120,20 +180,52 @@ const Error = styled.div`
   color: #e85a71;
 `;
 
-const JoinButton = styled.button`
-  height: 40px;
+const ButtonContainer = styled.div`
+  display: flex;
+  justify-content: space-between;
   margin-top: 35px;
+`;
+
+const Button = styled.button`
+  height: 40px;
   outline: none;
   border: none;
   border-radius: 15px;
   color: #d8e9ef;
-  background-color: #4ea1d3;
   font-size: 25px;
   font-weight: 500;
+  cursor: pointer;
+`;
 
-  :hover {
+const JoinButton = styled(Button)`
+  background-color: #4ea1d3;
+  &:hover {
     background-color: #7bb1d1;
-    cursor: pointer;
+  }
+`;
+
+const AddButton = styled(Button)`
+  background-color: #4caf50;
+  &:hover {
+    background-color: #45a049;
+  }
+`;
+
+const RemoveButton = styled(Button)`
+  background-color: #f44336;
+  &:hover {
+    background-color: #d32f2f;
+  }
+`;
+
+const ParticipantList = styled.div`
+  margin-top: 20px;
+  ul {
+    list-style-type: none;
+    padding: 0;
+  }
+  li {
+    margin-bottom: 5px;
   }
 `;
 

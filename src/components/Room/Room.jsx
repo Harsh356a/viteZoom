@@ -5,8 +5,6 @@ import socket from '../../socket';
 import VideoCard from '../Video/VideoCard';
 import BottomBar from '../BottomBar/BottomBar';
 import Chat from '../Chat/Chat';
-
-// params 
 import { useParams } from 'react-router-dom';
 
 const Room = () => {
@@ -23,7 +21,7 @@ const Room = () => {
   const userVideoRef = useRef();
   const screenTrackRef = useRef();
   const userStream = useRef();
-  const { roomId } = useParams(); // this will work with react-router-dom v6
+  const { roomId } = useParams();
   console.log('roomId: ', roomId);
 
   useEffect(() => {
@@ -46,30 +44,36 @@ const Room = () => {
 
         socket.emit('BE-join-room', { roomId, userName: currentUser });
         socket.on('FE-user-join', (users) => {
-          // all users
+          // Log received data for debugging
+          console.log('Received users:', users);
+
           const peers = [];
-          users.forEach(({ userId, info }) => {
-            let { userName, video, audio } = info;
+          users.forEach((user) => {
+            // Check if user has the expected structure
+            if (user && user.userId && user.info && user.info.userName) {
+              const { userId, info } = user;
+              const { userName, video, audio } = info;
 
-            if (userName !== currentUser) {
-              const peer = createPeer(userId, socket.id, stream);
+              if (userName !== currentUser) {
+                const peer = createPeer(userId, socket.id, stream);
 
-              peer.userName = userName;
-              peer.peerID = userId;
+                peer.userName = userName;
+                peer.peerID = userId;
 
-              peersRef.current.push({
-                peerID: userId,
-                peer,
-                userName,
-              });
-              peers.push(peer);
+                peersRef.current.push({
+                  peerID: userId,
+                  peer,
+                  userName,
+                });
+                peers.push(peer);
 
-              setUserVideoAudio((preList) => {
-                return {
+                setUserVideoAudio((preList) => ({
                   ...preList,
-                  [peer.userName]: { video, audio },
-                };
-              });
+                  [userName]: { video, audio },
+                }));
+              }
+            } else {
+              console.warn('Received user data without expected structure:', user);
             }
           });
 
@@ -210,13 +214,11 @@ const Room = () => {
     }
   }
 
-  // Open Chat
   const clickChat = (e) => {
     e.stopPropagation();
     setDisplayChat(!displayChat);
   };
 
-  // BackButton
   const goToBack = (e) => {
     e.preventDefault();
     socket.emit('BE-leave-room', { roomId, leaver: currentUser });
