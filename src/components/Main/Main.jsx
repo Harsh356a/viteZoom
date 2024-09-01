@@ -35,7 +35,7 @@ const Main = () => {
         const userName = userRef.current.value;
 console.log(roomName11,"jdbceb")
         sessionStorage.setItem("user", userName);
-        navigate(`/room/${roomName11}`);
+        navigate(`/room/${roomName || roomName11}`);
       } else {
         setErr(error);
         setErrMsg("User name already exist");
