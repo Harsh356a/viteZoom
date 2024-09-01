@@ -18,26 +18,28 @@ const Main = () => {
     const roomName = searchParams.get("roomName")?.replace(/['"]+/g, "");
 
     console.log("checking here", userName, roomName);
-    socket.emit("BE-check-user", { "roomName": roomName, "userName": userName });
+    socket.emit("BE-check-user", { roomName: roomName, userName: userName });
   }, [location]);
 
   useEffect(() => {
     const searchParams = new URLSearchParams(location.search);
     const roomName11 = searchParams.get("roomName")?.replace(/['"]+/g, "");
-
-    socket.on("FE-error-user-exist", ({ error }) => {
-      if (!error) {
-        const roomName = roomRef.current.value;
-        const userName = userRef.current.value;
-        console.log(roomName11, "jdbceb");
-        sessionStorage.setItem("user", userName);
-        navigate(`/room/${roomName11}`);
-      } else {
-        setErr(error);
-        setErrMsg("User name already exist");
-      }
-    });
-  });
+    const userName = searchParams.get("userName")?.replace(/['"]+/g, "");
+    if (userName) {
+      socket.on("FE-error-user-exist", ({ error }) => {
+        if (!error) {
+          const roomName = roomRef.current.value;
+          const userName = userRef.current.value;
+          console.log(roomName11, "jdbceb");
+          sessionStorage.setItem("user", userName);
+          navigate(`/room/${roomName11}`);
+        } else {
+          setErr(error);
+          setErrMsg("User name already exist");
+        }
+      });
+    }
+  }, [location]);
 
   function joinRoom() {
     const searchParams = new URLSearchParams(location.search);
