@@ -17,7 +17,9 @@ const Main = () => {
   // Get userName from query params
   const queryParams = new URLSearchParams(location.search);
   const userNameFromQuery = queryParams.get("fullName") || ""; // Fallback to empty string if not present
-
+  useEffect(() => {
+    console.log(userNameFromQuery);
+  });
   useEffect(() => {
     socket.on("FE-error-user-exist", ({ error }) => {
       if (error) {
