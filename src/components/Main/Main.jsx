@@ -10,6 +10,7 @@ const Main = () => {
   const [errMsg, setErrMsg] = useState("");
   const [waiting, setWaiting] = useState(false);
   const [participants, setParticipants] = useState([]);
+  const [roomUrl, setRoomUrl] = useState("");
 
   const navigate = useNavigate();
 
@@ -61,15 +62,15 @@ const Main = () => {
       setErr(true);
       setErrMsg("Enter Room Name and User Name");
     } else {
-      fetch('https://serverzoom-mpbv.onrender.com/api/addUser', {
-        method: 'POST',
+      fetch("https://serverzoom-mpbv.onrender.com/api/addUser", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({ roomId: roomName, userName }),
       })
-        .then(response => response.json())
-        .then(data => {
+        .then((response) => response.json())
+        .then((data) => {
           if (data.error) {
             setErr(true);
             setErrMsg(data.error);
@@ -82,7 +83,7 @@ const Main = () => {
             navigate(`/room/${roomName}`);
           }
         })
-        .catch(error => {
+        .catch((error) => {
           setErr(true);
           setErrMsg("Error adding participant");
         });
@@ -97,15 +98,15 @@ const Main = () => {
       setErr(true);
       setErrMsg("Enter Room Name and User Name");
     } else {
-      fetch('https://serverzoom-mpbv.onrender.com/api/removeUser', {
-        method: 'POST',
+      fetch("https://serverzoom-mpbv.onrender.com/api/removeUser", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({ roomId: roomName, userName }),
       })
-        .then(response => response.json())
-        .then(data => {
+        .then((response) => response.json())
+        .then((data) => {
           if (data.error) {
             setErr(true);
             setErrMsg(data.error);
@@ -114,13 +115,44 @@ const Main = () => {
             setErrMsg("");
           }
         })
-        .catch(error => {
+        .catch((error) => {
           setErr(true);
           setErrMsg("Error removing participant");
         });
     }
   }
+  function joinRoomViaApi(roomId, userName) {
+    setWaiting(true);
 
+    fetch('http://localhost:3001/api/join-room', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: { userName, roomId },
+    })
+      .then(response => response.json())
+      .then(data => {
+        if (data.error) {
+          setErr(true);
+          setErrMsg(data.error);
+        } else {
+          setErr(false);
+          setErrMsg("");
+          setRoomUrl(data.roomUrl);
+          sessionStorage.setItem("user", userName);
+          sessionStorage.setItem("socketId", data.socketId);
+          navigate(`/room/${data.roomId}`);
+        }
+      })
+      .catch(error => {
+        setErr(true);
+        setErrMsg("Error joining room");
+      })
+      .finally(() => {
+        setWaiting(false);
+      });
+  }
   return (
     <MainContainer>
       <Row>
@@ -132,11 +164,12 @@ const Main = () => {
         <Input type="text" id="userName" ref={userRef} />
       </Row>
       <ButtonContainer>
-        <JoinButton onClick={clickJoin}>Join</JoinButton>
-        <AddButton onClick={addParticipant}>Add Participant</AddButton>
-        <RemoveButton onClick={removeParticipant}>Remove Participant</RemoveButton>
+        <JoinButton onClick={clickJoin}>Join Room</JoinButton>
+        <JoinButton onClick={joinRoomViaApi}>Join Room via API</JoinButton>
       </ButtonContainer>
       {err ? <Error>{errMsg}</Error> : null}
+      {waiting ? <Waiting>Joining room...</Waiting> : null}
+      {roomUrl && <RoomUrl>Room URL: {roomUrl}</RoomUrl>}
       <ParticipantList>
         <h3>Participants:</h3>
         <ul>
@@ -163,7 +196,17 @@ const Row = styled.div`
 `;
 
 const Label = styled.label``;
+const Waiting = styled.div`
+  margin-top: 10px;
+  font-size: 20px;
+  color: #4ea1d3;
+`;
 
+const RoomUrl = styled.div`
+  margin-top: 10px;
+  font-size: 16px;
+  word-break: break-all;
+`;
 const Input = styled.input`
   width: 150px;
   height: 35px;
