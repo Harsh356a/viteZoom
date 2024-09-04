@@ -25,7 +25,9 @@ p {
 video::-webkit-media-controls {
   display: none !important;
 }
-
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 @media screen and (max-height: 630px) {
   html,
   body {
