@@ -5,12 +5,11 @@ import socket from "../../socket";
 import VideoCard from "../Video/VideoCard";
 import BottomBar from "../BottomBar/BottomBar";
 import Chat from "../Chat/Chat";
-import { useParams, useLocation } from "react-router-dom";
+import { useParams } from "react-router-dom";
 
 const Room = () => {
   const currentUser = sessionStorage.getItem("user");
   const [peers, setPeers] = useState([]);
-  const location = useLocation();
   const [userVideoAudio, setUserVideoAudio] = useState({
     localUser: { video: true, audio: true },
   });
@@ -24,69 +23,7 @@ const Room = () => {
   const userStream = useRef();
   const { roomId } = useParams();
   console.log("roomId: ", roomId);
-  useEffect(() => {
-    // Get userToken and userName from URL params
-    const params = new URLSearchParams(location.search);
-    const userToken =
-      params.get("userToken") || sessionStorage.getItem("userToken");
-    const userName = params.get("userName") || sessionStorage.getItem("user");
 
-    // Connect Camera & Mic
-    navigator.mediaDevices
-      .getUserMedia({ video: true, audio: true })
-      .then((stream) => {
-        userVideoRef.current.srcObject = stream;
-        userStream.current = stream;
-
-        socket.emit("BE-join-room", { roomId, userName, userToken });
-        socket.on("FE-user-join", (users) => {
-          // Log received data for debugging
-          console.log("Received users:", users);
-
-          const peers = [];
-          users.forEach((user) => {
-            if (user && user.userId && user.info && user.info.userName) {
-              const { userId, info } = user;
-              const { userName, video, audio } = info;
-
-              if (userName !== currentUser) {
-                const peer = createPeer(userId, socket.id, stream);
-
-                peer.userName = userName;
-                peer.peerID = userId;
-
-                peersRef.current.push({
-                  peerID: userId,
-                  peer,
-                  userName,
-                });
-                peers.push(peer);
-
-                setUserVideoAudio((preList) => ({
-                  ...preList,
-                  [userName]: { video, audio },
-                }));
-              }
-            } else {
-              console.warn(
-                "Received user data without expected structure:",
-                user
-              );
-            }
-          });
-
-          setPeers(peers);
-        });
-
-        // ... (keep other socket event listeners)
-      });
-
-    // ... (keep other useEffect code)
-
-    return () => {
-      socket.disconnect();
-    };
-  }, [roomId, location.search]);
   useEffect(() => {
     console.log("effect roomId: ", roomId);
     // Get Video Devices
