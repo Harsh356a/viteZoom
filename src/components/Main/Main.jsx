@@ -17,6 +17,7 @@ const Main = () => {
   // Get userName from query params
   const queryParams = new URLSearchParams(location.search);
   const userNameFromQuery = queryParams.get("fullName") || ""; // Fallback to empty string if not present
+  const role = "Participant";
   useEffect(() => {
     console.log(userNameFromQuery);
   });
@@ -53,12 +54,12 @@ const Main = () => {
       setErr(true);
       setErrMsg("Enter Room Name and User Name");
     } else {
-      fetch("https://serverzoom-mpbv.onrender.com/api/addUser", {
+      fetch("http://localhost:3001/api/addUser", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ roomId: roomName, userName }),
+        body: JSON.stringify({ roomId: roomName, userName, role }),
       })
         .then((response) => response.json())
         .then((data) => {
@@ -69,7 +70,7 @@ const Main = () => {
             setErr(false);
             setErrMsg("");
             // After successfully adding the user, join the room
-            socket.emit("BE-join-room", { roomId: roomName, userName });
+            socket.emit("BE-join-room", { roomId: roomName, userName, role });
             sessionStorage.setItem("user", userName);
             navigate(`/room/${roomName}`);
           }
@@ -89,7 +90,6 @@ const Main = () => {
           type="text"
           id="roomName"
           ref={roomRef}
-          readOnly
           placeholder="Enter Room Name"
         />
       </Form>
@@ -98,7 +98,6 @@ const Main = () => {
         <StyledInput
           type="text"
           id="userName"
-          readOnly
           ref={userRef}
           defaultValue={userNameFromQuery} // Pre-fill the username from the query
           placeholder="Enter Your Name"

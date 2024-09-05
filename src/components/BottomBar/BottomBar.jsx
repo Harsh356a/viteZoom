@@ -13,7 +13,6 @@ const BottomBar = ({
   videoDevices,
   showVideoDevices,
   setShowVideoDevices,
-  toggleBreakoutRooms, // Add this prop
 }) => {
   const handleToggle = useCallback(
     (e) => {
@@ -21,57 +20,58 @@ const BottomBar = ({
     },
     [setShowVideoDevices]
   );
-  const role = localStorage.getItem("roletoban"); // Example role value
-  const location = useLocation(); // Get current location
+  const role = localStorage.getItem("roletoban");
+  const location = useLocation();
   const queryParams = new URLSearchParams(location.search);
-  const isAction = queryParams.get("isaction"); // Extract
+  const isAction = queryParams.get("isaction");
+
+  const isModerator = role === "Observer";
+
   return (
     <Bar style={{ display: isAction === "false" ? "none" : "flex" }}>
       <Left>
         <CameraButton
-          onClick={toggleCameraAudio}
+          onClick={isModerator ? null : toggleCameraAudio}
           data-switch="video"
-          className={role === "Observer" ? "disabled" : ""}
+          className={isModerator ? "disabled" : ""}
         >
           <div>
-            {userVideoAudio.video ? (
-              <FaIcon className="fas fa-video"></FaIcon>
-            ) : (
+            {isModerator || !userVideoAudio.video ? (
               <FaIcon className="fas fa-video-slash"></FaIcon>
+            ) : (
+              <FaIcon className="fas fa-video"></FaIcon>
             )}
           </div>
           Camera
         </CameraButton>
-        {showVideoDevices && (
+        {showVideoDevices && !isModerator && (
           <SwitchList>
             {videoDevices.length > 0 &&
-              videoDevices.map((device) => {
-                return (
-                  <div
-                    key={device.deviceId}
-                    onClick={clickCameraDevice}
-                    data-value={device.deviceId}
-                  >
-                    {device.label}
-                  </div>
-                );
-              })}
+              videoDevices.map((device) => (
+                <div
+                  key={device.deviceId}
+                  onClick={clickCameraDevice}
+                  data-value={device.deviceId}
+                >
+                  {device.label}
+                </div>
+              ))}
             <div>Switch Camera</div>
           </SwitchList>
         )}
-        <SwitchMenu onClick={handleToggle}>
+        <SwitchMenu onClick={isModerator ? null : handleToggle}>
           <i className="fas fa-angle-up"></i>
         </SwitchMenu>
         <CameraButton
-          onClick={toggleCameraAudio}
+          onClick={isModerator ? null : toggleCameraAudio}
           data-switch="audio"
-          className={role === "Observer" ? "disabled" : ""}
+          className={isModerator ? "disabled" : ""}
         >
           <div>
-            {userVideoAudio.audio ? (
-              <FaIcon className="fas fa-microphone"></FaIcon>
-            ) : (
+            {isModerator || !userVideoAudio.audio ? (
               <FaIcon className="fas fa-microphone-slash"></FaIcon>
+            ) : (
+              <FaIcon className="fas fa-microphone"></FaIcon>
             )}
           </div>
           Audio
@@ -79,13 +79,12 @@ const BottomBar = ({
       </Left>
       <Center>
         <ScreenButton
-          className={role === "Observer" ? "disabled" : ""}
-          onClick={role !== "Observer" ? clickScreenSharing : undefined} // Prevent click if role is "Observer"
+          onClick={isModerator ? null : clickScreenSharing}
+          className={isModerator ? "disabled" : ""}
         >
           <div>
             <FaIcon
               className={`fas fa-desktop ${screenShare ? "sharing" : ""}`}
-              // Disable the button if the role is "Observer"
             ></FaIcon>
           </div>
           Share Screen
