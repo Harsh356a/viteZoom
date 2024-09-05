@@ -53,7 +53,7 @@ const Main = () => {
       setErr(true);
       setErrMsg("Enter Room Name and User Name");
     } else {
-      fetch("https://serverzoom-mpbv.onrender.com/api/addUser", {
+      fetch("https://zoom.trainright.fit/api/addUser", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
