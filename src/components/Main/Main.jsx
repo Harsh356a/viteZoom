@@ -46,7 +46,7 @@ const Main = () => {
   }, [navigate]);
 
   function addParticipant() {
-    const roomName = roomRef.current.value || "newtestingac"; // Use default room name if empty
+    const roomName = roomRef.current.value || "newtestin"; // Use default room name if empty
     const userName = userRef.current.value || userNameFromQuery; // Use userName from query if not filled
 
     if (!roomName || !userName) {
