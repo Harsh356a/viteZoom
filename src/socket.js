@@ -1,6 +1,6 @@
 import io from 'socket.io-client';
 
-const ENDPOINT = 'http://localhost:8008';
+const ENDPOINT = 'http://localhost:3001/';
 // const ENDPOINT = 'https://serverzoom-mpbv.onrender.com/'; // Uncomment this line for production
 
 const socket = io(ENDPOINT, {

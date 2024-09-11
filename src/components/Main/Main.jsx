@@ -1,75 +1,61 @@
-import React, { useRef, useState, useEffect } from "react";
-import styled from "styled-components";
-import socket from "../../socket";
-import Room from "../Room/Room";
+import React, { useRef, useState, useEffect } from 'react';
+import styled from 'styled-components';
+import socket from '../../socket';
+import { useNavigate } from 'react-router-dom';
 
-const Main = ({ breakRoomID }) => {
+const Main = () => {
+  
   const roomRef = useRef();
   const userRef = useRef();
   const [err, setErr] = useState(false);
-  const [errMsg, setErrMsg] = useState("");
-  const [showRoom, setShowRoom] = useState(false);
-  const [roomprop, setRoomProps] = useState("");
+  const [errMsg, setErrMsg] = useState('');
+
+  const navigate = useNavigate();
+
   useEffect(() => {
-    socket.on("FE-error-user-exist", ({ error }) => {
+
+    socket.on('FE-error-user-exist', ({ error }) => {
       if (!error) {
         const roomName = roomRef.current.value;
         const userName = userRef.current.value;
 
+        sessionStorage.setItem('user', userName);
         // props.history.push(`/room/${roomName}`); since we are using react-router-dom v6, we need to use the navigate function
+        navigate(`/room/${roomName}`);
       } else {
         setErr(error);
-        setErrMsg("User name already exist");
+        setErrMsg('User name already exist');
       }
     });
   }, []);
-  useEffect(() => {
-    if (breakRoomID) {
-      setRoomProps(breakRoomID);
-      console.log("isopenBreak");
-      socket.emit("BE-check-user", { roomId: breakRoomID, userName:"medulas" });
-      setShowRoom(true);
-    }
-  });
+
   function clickJoin() {
-    
     const roomName = roomRef.current.value;
     const userName = userRef.current.value;
-    console.log("roomName: ", breakRoomID);
-    
-    localStorage.setItem("user2", userName);
+    console.log('roomName: ', roomName);
+
     if (!roomName || !userName) {
       setErr(true);
-      setErrMsg("Enter Room Name or User Name");
+      setErrMsg('Enter Room Name or User Name');
     } else {
-      setRoomProps(roomName); // Set room name in state
-      socket.emit("BE-check-user", { roomId: roomName, userName });
-      console.log("BE-check-user: ", { roomId: roomName, userName });
-      setShowRoom(true);
+      socket.emit('BE-check-user', { roomId: roomName, userName });
+      console.log('BE-check-user: ', { roomId: roomName, userName });
     }
   }
 
   return (
-    <div>
-      {showRoom == false ? (
-        <MainContainer>
-          <Row>
-            <Label htmlFor="roomName">Room Name</Label>
-            <Input type="text" id="roomName" ref={roomRef} />
-          </Row>
-          <Row>
-            <Label htmlFor="userName">User Name</Label>
-            <Input type="text" id="userName" ref={userRef} />
-          </Row>
-          <JoinButton onClick={clickJoin}> Join </JoinButton>
-          {err ? <Error>{errMsg}</Error> : null}
-        </MainContainer>
-      ) : (
-        <div>
-          <Room roomId={roomprop} />
-        </div>
-      )}
-    </div>
+    <MainContainer>
+      <Row>
+        <Label htmlFor="roomName">Room Name</Label>
+        <Input type="text" id="roomName" ref={roomRef} />
+      </Row>
+      <Row>
+        <Label htmlFor="userName">User Name</Label>
+        <Input type="text" id="userName" ref={userRef} />
+      </Row>
+      <JoinButton onClick={clickJoin}> Join </JoinButton>
+      {err ? <Error>{errMsg}</Error> : null}
+    </MainContainer>
   );
 };
 
