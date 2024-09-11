@@ -449,4 +449,4 @@ const FaIcon = styled.i`
   top: 15px;
 `;
 
-export default Room;
+export default Room;  
