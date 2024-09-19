@@ -4,7 +4,7 @@ import styled from 'styled-components';
 import socket from '../../socket';
 import VideoCard from '../Video/VideoCard';
 import BottomBar from '../BottomBar/BottomBar';
-import Chat from '../Chat/Chat';
+// import Chat from '../Chat/Chat';
 
 // params 
 import { useParams } from 'react-router-dom';
@@ -384,7 +384,7 @@ const Room = () => {
           setShowVideoDevices={setShowVideoDevices}
         />
       </VideoAndBarContainer>
-      <Chat display={displayChat} roomId={roomId} />
+      {/* <Chat display={displayChat} roomId={roomId} /> */}
     </RoomContainer>
   );
 };
@@ -449,4 +449,4 @@ const FaIcon = styled.i`
   top: 15px;
 `;
 
-export default Room;  
+export default Room;

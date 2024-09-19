@@ -1,8 +1,8 @@
-import React from "react";
-import { BrowserRouter, Route, Routes } from "react-router-dom";
-import Main from "./components/Main/Main";
-import Room from "./components/Room/Room";
-import styled from "styled-components";
+import React from 'react';
+import { BrowserRouter, Route, Routes } from 'react-router-dom';
+import Main from './components/Main/Main';
+import Room from './components/Room/Room'
+import styled from 'styled-components';
 
 function App() {
   return (

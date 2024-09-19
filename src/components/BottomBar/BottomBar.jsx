@@ -13,20 +13,33 @@ const BottomBar = ({
   videoDevices,
   showVideoDevices,
   setShowVideoDevices,
+  createBreakoutRoom,
+  joinBreakoutRoom,
+  leaveBreakoutRoom,
+  breakoutRooms,
+  currentBreakoutRoom,
 }) => {
+  const role = localStorage.getItem("roletoban");
+  const location = useLocation();
+  const queryParams = new URLSearchParams(location.search);
+  const isAction = queryParams.get("isaction");
+  const [showBreakoutRooms, setShowBreakoutRooms] = useState(false);
+  const [newBreakoutRoomName, setNewBreakoutRoomName] = useState("");
+  const isModerator = role === "Observer";
   const handleToggle = useCallback(
     (e) => {
       setShowVideoDevices((state) => !state);
     },
     [setShowVideoDevices]
   );
-  const role = localStorage.getItem("roletoban");
-  const location = useLocation();
-  const queryParams = new URLSearchParams(location.search);
-  const isAction = queryParams.get("isaction");
 
-  const isModerator = role === "Observer";
-
+  const handleCreateBreakoutRoom = () => {
+    console.log(newBreakoutRoomName)
+    if (newBreakoutRoomName.trim()) {
+      createBreakoutRoom(newBreakoutRoomName.trim());
+      setNewBreakoutRoomName("");
+    }
+  };
   return (
     <Bar style={{ display: isAction === "false" ? "none" : "flex" }}>
       <Left>
@@ -89,13 +102,87 @@ const BottomBar = ({
           </div>
           Share Screen
         </ScreenButton>
+        <BreakoutButton
+          onClick={() => setShowBreakoutRooms(!showBreakoutRooms)}
+        >
+          <div>
+            <FaIcon className="fas fa-users"></FaIcon>
+          </div>
+          Breakout Rooms
+        </BreakoutButton>
+        {showBreakoutRooms && (
+          <BreakoutRoomsList>
+            <input
+              type="text"
+              value={newBreakoutRoomName}
+              onChange={(e) => setNewBreakoutRoomName(e.target.value)}
+              placeholder="New room name"
+            />
+            <button onClick={handleCreateBreakoutRoom}>Create Room</button>
+            {Object.entries(breakoutRooms).map(([roomId, room]) => (
+              <div key={roomId}>
+                {room.name}
+                {currentBreakoutRoom === roomId ? (
+                  <button onClick={leaveBreakoutRoom}>Leave</button>
+                ) : (
+                  <button onClick={() => joinBreakoutRoom(roomId)}>Join</button>
+                )}
+              </div>
+            ))}
+          </BreakoutRoomsList>
+        )}
       </Center>
+
       <Right>
         <StopButton onClick={goToBack}>Stop</StopButton>
       </Right>
     </Bar>
   );
 };
+const ScreenButton = styled.div`
+  width: auto;
+  border: none;
+  font-size: 0.9375rem;
+  padding: 5px;
+
+  :hover {
+    background-color: #77b7dd;
+    cursor: pointer;
+    border-radius: 15px;
+  }
+
+  .sharing {
+    color: #ee2560;
+  }
+
+  &.disabled {
+    opacity: 0.5;
+    pointer-events: none;
+    cursor: not-allowed;
+  }
+`;
+const BreakoutButton = styled(ScreenButton)`
+  // Add any specific styles for the breakout room button
+`;
+
+const BreakoutRoomsList = styled.div`
+  position: absolute;
+  top: -200px;
+  background-color: #f0f0f0;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  padding: 10px;
+  z-index: 1000;
+
+  input {
+    width: 100%;
+    margin-bottom: 10px;
+  }
+
+  button {
+    margin: 5px;
+  }
+`;
 
 const Bar = styled.div`
   position: absolute;
@@ -181,28 +268,7 @@ const CameraButton = styled.div`
   }
 `;
 
-const ScreenButton = styled.div`
-  width: auto;
-  border: none;
-  font-size: 0.9375rem;
-  padding: 5px;
 
-  :hover {
-    background-color: #77b7dd;
-    cursor: pointer;
-    border-radius: 15px;
-  }
-
-  .sharing {
-    color: #ee2560;
-  }
-
-  &.disabled {
-    opacity: 0.5;
-    pointer-events: none;
-    cursor: not-allowed;
-  }
-`;
 
 const FaIcon = styled.i`
   width: 30px;
